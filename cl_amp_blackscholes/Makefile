@@ -16,10 +16,14 @@ CPPFLAGS+=-DENABLE_OPENCL
 #LDFLAGS+=-L/opt/AMD/CodeXL/AMDTActivityLogger/bin/x86_64 -lAMDTActivityLogger
 #LDFLAGS+=-L/opt/AMD/CodeXL  -lAMDTBaseTools
 
-all: bs_opencl
+all: bs_opencl bs_amp
 
 bs_opencl: bs_opencl.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
-clean:
 
+bs_amp: bs_opencl.cpp
+	../script/buildme_mod bs_opencl.cpp -I../utilities/include -DENABLE_CPPAMP;mv bs_opencl.cpp.out bs_amp
+
+clean:
+	rm -f bs_opencl bs_amp kernel.* *.o *.ll
