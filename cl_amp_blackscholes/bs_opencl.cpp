@@ -238,9 +238,36 @@ void ampBlackScholes(float* inputPtr
     callView[id[0]] = call;
     putView[id[0]] = put;
   });
+
   callView.synchronize();
   putView.synchronize();
 }
+
+/*
+void ampArrayBlackScholes(float* inputPtr
+                   , float* gpuCall, float* gpuPut
+                   , const unsigned int num) {
+
+  SimpleTimer timer(__FUNCTION__);
+
+  array<float,1> inputArray(extent<1>(num),inputPtr);
+  array<float,1> callArray(num);
+  array<float,1> putArray(num);
+
+  parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
+    float call, put;
+    calculateBlackScholes(inputArray(id[0]), &call, &put); 
+    callArray[id[0]] = call;
+    putArray[id[0]] = put;
+  });
+
+  completion_future cf = copy_async(callArray, gpuCall);
+  completion_future pf = copy_async(putArray, gpuPut);
+  cf.wait();
+  pf.wait();
+}
+*/
+
 #endif
 
 
