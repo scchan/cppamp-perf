@@ -75,16 +75,20 @@ class amdActivityLogger {
 public:
 
   amdActivityLogger() {
+    
+    marker = NULL;
+
     int status = amdtInitializeActivityLogger();
 
     profilerDetected = false;
 
     switch (status) {
+    case AL_APP_PROFILER_NOT_DETECTED:
+      std::cerr << "CodeXL profiler not detected!" << std::endl;
+      break;
     case AL_SUCCESS:
       profilerDetected = true;
-      break;
-    case AL_APP_PROFILER_NOT_DETECTED:
-      break;
+      marker = new amdtScopedMarker("amdActivityLogger",NULL);
     default:
       std::cerr << "amdtInitializeActivityLogger error: " << status << std::endl;
       exit(1);
@@ -92,21 +96,25 @@ public:
   };
 
   ~amdActivityLogger() {
-    int status = amdtFinalizeActivityLogger();
+    if (profilerDetected) {
 
-    switch (status) {
-    case AL_SUCCESS:
-      break;
-    case AL_UNINITIALIZED_ACTIVITY_LOGGER:
-      if (!profilerDetected)
+      if (marker!=NULL)
+        delete marker;
+
+      int status = amdtFinalizeActivityLogger();
+      switch (status) {
+      case AL_SUCCESS:
         break;
-    default:
-      std::cerr << "amdtFinalizeActivityLogger error: " << status << std::endl;
-      exit(1);
-    };
+      case AL_UNINITIALIZED_ACTIVITY_LOGGER:
+      default:
+        std::cerr << "amdtFinalizeActivityLogger error: " << status << std::endl;
+        exit(1);
+      };
+    }
   }
 
 private:
+  amdtScopedMarker* marker;
   bool profilerDetected;
 };
 
@@ -220,7 +228,15 @@ void openclBlackScholes(float* inputPtr
 #ifdef ENABLE_CPPAMP
 
 
+void ampZeroArray(float* a, unsigned int num) {
+  SimpleTimer timer(__FUNCTION__);
 
+  array_view<float> v(extent<1>(num), a);
+  parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
+    v[id[0]] = 0.0f;
+  });
+  v.synchronize();
+}
 
 void ampBlackScholes(float* inputPtr
                    , float* gpuCall, float* gpuPut
@@ -255,7 +271,7 @@ void ampArrayBlackScholes(float* inputPtr
 
   parallel_for_each(extent<1>(num), [&] (index<1> id) restrict(amp) {
     float call, put;
-    calculateBlackScholes(inputArray(id[0]), &call, &put); 
+    calculateBlackScholes(inputArray[id[0]], &call, &put); 
     callArray[id[0]] = call;
     putArray[id[0]] = put;
   });
@@ -273,6 +289,7 @@ int main(int argc, char** argv) {
 
 #ifdef ENABLE_CODEXL
   amdActivityLogger logger;
+  amdtScopedMarker marker((const char*)__FUNCTION__,"dummy");
 #endif
 
   SimpleTimer timer(__FUNCTION__);
@@ -293,10 +310,10 @@ int main(int argc, char** argv) {
   float* gpuPut = new float[arg.numInput];
   float* gpuCall = new float[arg.numInput];
 
+#ifdef ENABLE_OPENCL
   memset(gpuPut,0,arg.numInput*sizeof(float));
   memset(gpuCall,0,arg.numInput*sizeof(float));
 
-#ifdef ENABLE_OPENCL
   openclBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
 #endif
@@ -305,11 +322,17 @@ int main(int argc, char** argv) {
   // compute C++AMP BlackScholes
 
 #ifdef ENABLE_CPPAMP
+
+  ampZeroArray(gpuCall, arg.numInput);
+  ampZeroArray(gpuPut, arg.numInput);
+
+
   ampBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
 
-  memset(gpuPut, 0, arg.numInput*sizeof(float));
-  memset(gpuCall, 0, arg.numInput*sizeof(float));
+  ampZeroArray(gpuCall, arg.numInput);
+  ampZeroArray(gpuPut, arg.numInput);
+
 
   ampArrayBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);

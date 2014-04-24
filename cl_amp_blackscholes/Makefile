@@ -4,7 +4,7 @@ CC=g++
 CPPFLAGS+=-I$(AMDAPPSDKROOT)/include 
 LDFLAGS+=-L$(AMDAPPSDKROOT)/lib/x86_64 -lOpenCL
 
-CPPFLAGS+=-I/home/xkerox/Code/P4_PAE/main/sw/AEDS/AppEng/personal/scchan/utilities/include
+CPPFLAGS+=-I../utilities/include
 
 
 CPPFLAGS+=-g
@@ -12,9 +12,18 @@ CPPFLAGS+=-O3
 
 CPPFLAGS+=-DENABLE_OPENCL
 
-#CPPFLAGS+=-DENABLE_CODEXL -I/opt/AMD/CodeXL/AMDTActivityLogger/include
-#LDFLAGS+=-L/opt/AMD/CodeXL/AMDTActivityLogger/bin/x86_64 -lAMDTActivityLogger
-#LDFLAGS+=-L/opt/AMD/CodeXL  -lAMDTBaseTools
+
+
+# CodeXL support
+CODEXL_PATH=/opt/AMD/CodeXL
+CODEXL_CPPFLAGS=-DENABLE_CODEXL -I$(CODEXL_PATH)/AMDTActivityLogger/include
+CODEXL_LDFLAGS=-L$(CODEXL_PATH)/AMDTActivityLogger/bin/x86_64 -lAMDTActivityLogger
+CODEXL_LDFLAGS+=-L$(CODEXL_PATH)  -lAMDTBaseTools
+
+CPPFLAGS+=$(CODEXL_CPPFLAGS)
+LDFLAGS+=$(CODEXL_LDFLAGS)
+
+
 
 all: bs_opencl bs_amp
 
