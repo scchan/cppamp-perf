@@ -65,7 +65,7 @@ static void genRandomInput(float* array, unsigned int n) {
 #ifdef ENABLE_CODEXL
   amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
 #endif
-  for (int i = 0; i < n; i++) {
+  for (unsigned int i = 0; i < n; i++) {
     array[i] = (float)rand() / (float)RAND_MAX;
   }
 }
@@ -243,7 +243,6 @@ void ampBlackScholes(float* inputPtr
   putView.synchronize();
 }
 
-/*
 void ampArrayBlackScholes(float* inputPtr
                    , float* gpuCall, float* gpuPut
                    , const unsigned int num) {
@@ -254,7 +253,7 @@ void ampArrayBlackScholes(float* inputPtr
   array<float,1> callArray(num);
   array<float,1> putArray(num);
 
-  parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
+  parallel_for_each(extent<1>(num), [&] (index<1> id) restrict(amp) {
     float call, put;
     calculateBlackScholes(inputArray(id[0]), &call, &put); 
     callArray[id[0]] = call;
@@ -266,7 +265,6 @@ void ampArrayBlackScholes(float* inputPtr
   cf.wait();
   pf.wait();
 }
-*/
 
 #endif
 
@@ -295,6 +293,9 @@ int main(int argc, char** argv) {
   float* gpuPut = new float[arg.numInput];
   float* gpuCall = new float[arg.numInput];
 
+  memset(gpuPut,0,arg.numInput*sizeof(float));
+  memset(gpuCall,0,arg.numInput*sizeof(float));
+
 #ifdef ENABLE_OPENCL
   openclBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
@@ -306,6 +307,13 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_CPPAMP
   ampBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
+
+  memset(gpuPut, 0, arg.numInput*sizeof(float));
+  memset(gpuCall, 0, arg.numInput*sizeof(float));
+
+  ampArrayBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
+  verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
+
 #endif
 
   delete[] cpuPut;
