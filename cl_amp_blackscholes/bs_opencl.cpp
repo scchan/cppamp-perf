@@ -65,6 +65,8 @@ static void genRandomInput(float* array, unsigned int n) {
 #ifdef ENABLE_CODEXL
   amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
 #endif
+  SimpleTimer timer(__FUNCTION__);
+
   for (unsigned int i = 0; i < n; i++) {
     array[i] = (float)rand() / (float)RAND_MAX;
   }
@@ -174,54 +176,172 @@ void verifyBlackScholes(const float* cpuCall, const float* cpuPut
 #include <CL/cl.hpp>
 using namespace cl;
 
+typedef make_kernel<Buffer&, Buffer&, Buffer&> BlackScholesKernelType;
 
-void openclBlackScholes(float* inputPtr
-                        , float* gpuCall, float* gpuPut
-                        , const unsigned int num) {
+class OpenCLBlackScholes {
+public:
+
+  OpenCLBlackScholes(Device device=Device::getDefault()) {
 #ifdef ENABLE_CODEXL
-  amdtScopedMarker marker((const char*)__FUNCTION__,"");
+    amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-  SimpleTimer timer(__FUNCTION__);
+    SimpleTimer timer(__FUNCTION__);
+    try {
+      context = Context(device);
+      queue = CommandQueue(context, device);
+      std::string file = readFile("bs_kernel.h");
+      program = Program(context, file);
+      program.build("-DOCL_BLACKSCHOLES");
+      kernel = Kernel(program, "blackScholes");
+    } catch (cl::Error error) {
+      std::cerr << "Error: " << error.what() << "(" << error.err() << ")" << std::endl;
+    } catch (...) {
+      std::cerr << "Error: unknown exception." << std::endl;
+    }
+  }
 
-  try {
-    Device device = Device::getDefault();
-    Context context(device);
+  enum OpenCLBSMode {
+    BS_HOST_ZERO_COPY
+    ,BS_BUFFER_COPY
+  };
 
-    std::string file = readFile("bs_kernel.h");
-    Program program(context, file);
-    program.build("-DOCL_BLACKSCHOLES");
-    typedef make_kernel<Buffer&, Buffer&, Buffer&> BlackScholesKernelType;
-    BlackScholesKernelType blackScholesKernel(program,"blackScholes");
+  void run(float* input
+           , float* call
+           , float* put
+           , const unsigned int num
+           , const OpenCLBSMode mode) {
 
-    Buffer input(context, CL_MEM_USE_HOST_PTR, num*sizeof(float), inputPtr);
-    Buffer put(context, CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY, num*sizeof(float), gpuPut);
-    Buffer call(context, CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY, num*sizeof(float), gpuCall);
 
-    CommandQueue queue(context,device);
-    EnqueueArgs args(queue,NDRange(num));
+    Buffer inputBuffer, putBuffer, callBuffer;
+    switch(mode) {
+      case BS_HOST_ZERO_COPY:
+        createBufferZeroCopy(num
+                             ,inputBuffer, input
+                             ,callBuffer, call
+                             ,putBuffer, put);
+      break;
+      case BS_BUFFER_COPY:
+        createDeviceBuffer(num
+                             ,inputBuffer, input
+                             ,callBuffer
+                             ,putBuffer);
+      break;
+      default:
+      break;
+    };
 
-    //for (int i = 0; i < 10; i++)
-    blackScholesKernel(args, input, call, put);
+    runKernel(num,inputBuffer,callBuffer,putBuffer);
+
+    switch(mode) {
+      case BS_HOST_ZERO_COPY:
+        mapBufferZeroCopy(num, callBuffer, putBuffer); 
+      break;
+      case BS_BUFFER_COPY:
+        copyFromBuffer(num 
+                       ,callBuffer, call
+                       ,putBuffer, put);
+      break;
+      default:
+      break;
+    }
+                  
+  }
+  
+
+private:
+  Device device;
+  Context context;
+  Program program;
+  CommandQueue queue;
+  Kernel kernel;
+
+  void createBufferZeroCopy(const unsigned int num
+                            , Buffer& inputBuffer, float* input
+                            , Buffer& callBuffer, float* call
+                            , Buffer& putBuffer, float* put) {
+#ifdef ENABLE_CODEXL
+    amdtScopedMarker marker((const char*)__FUNCTION__,"");
+#endif
+    SimpleTimer timer(__FUNCTION__);
+
+    inputBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_READ_ONLY, num*sizeof(float), input);
+    putBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY, num*sizeof(float), put);
+    callBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY, num*sizeof(float), call);
+  }
+
+  void mapBufferZeroCopy(const unsigned int num
+                         , Buffer& callBuffer
+                         , Buffer& putBuffer) {
+#ifdef ENABLE_CODEXL
+    amdtScopedMarker marker((const char*)__FUNCTION__,"");
+#endif
+    SimpleTimer timer(__FUNCTION__);
+
 
     std::vector<Event> mapEvents;
     mapEvents.resize(2);
-    queue.enqueueMapBuffer(put, CL_FALSE
+    queue.enqueueMapBuffer(putBuffer, CL_FALSE
                           , CL_MAP_READ
                           , 0, num*sizeof(float)
                           , NULL, &(mapEvents[0]), NULL);
 
-    queue.enqueueMapBuffer(call, CL_FALSE
+    queue.enqueueMapBuffer(callBuffer, CL_FALSE
                          , CL_MAP_READ
                          , 0, num*sizeof(float)
                          , NULL, &(mapEvents[1]), NULL);
     WaitForEvents(mapEvents);
-
-  } catch (cl::Error error) {
-    std::cerr << "Error: " << error.what() << "(" << error.err() << ")" << std::endl;
-  } catch (...) {
-    std::cerr << "Error: unknown exception." << std::endl;
   }
-}
+
+
+  void createDeviceBuffer(const unsigned int num
+                         , Buffer& inputBuffer, float* input
+                         , Buffer& callBuffer
+                         , Buffer& putBuffer) {
+#ifdef ENABLE_CODEXL
+    amdtScopedMarker marker((const char*)__FUNCTION__,"");
+#endif
+    SimpleTimer timer(__FUNCTION__);
+
+    inputBuffer = Buffer(context, CL_MEM_READ_ONLY, num*sizeof(float));
+    queue.enqueueWriteBuffer(inputBuffer,CL_FALSE,0,num*sizeof(float),input);
+
+    putBuffer = Buffer(context, CL_MEM_WRITE_ONLY, num*sizeof(float));
+    callBuffer = Buffer(context, CL_MEM_WRITE_ONLY, num*sizeof(float));
+    queue.finish();
+  }
+
+  void copyFromBuffer(const unsigned int num
+                      , Buffer& callBuffer, float* call
+                      , Buffer& putBuffer, float* put) {
+#ifdef ENABLE_CODEXL
+    amdtScopedMarker marker((const char*)__FUNCTION__,"");
+#endif
+    SimpleTimer timer(__FUNCTION__);
+
+    queue.enqueueReadBuffer(putBuffer, CL_FALSE, 0, num*sizeof(float), put);
+    queue.enqueueReadBuffer(callBuffer, CL_FALSE, 0, num*sizeof(float), call);
+    queue.finish();
+  }
+
+  void runKernel(const unsigned int num,
+                 Buffer& input, Buffer& call, Buffer& put) {
+
+#ifdef ENABLE_CODEXL
+    amdtScopedMarker marker((const char*)__FUNCTION__,"");
+#endif
+    SimpleTimer timer(__FUNCTION__);
+
+    //for (int i = 0; i < 10; i++)
+    kernel.setArg(0, input);
+    kernel.setArg(1, call);
+    kernel.setArg(2, put);
+    queue.enqueueNDRangeKernel(kernel, NullRange, NDRange(num));
+
+    queue.finish();
+  }
+
+
+};
 
 #endif
 
@@ -240,7 +360,8 @@ void ampZeroArray(float* a, unsigned int num) {
 
 void ampBlackScholes(float* inputPtr
                    , float* gpuCall, float* gpuPut
-                   , const unsigned int num) {
+                   , const unsigned int num
+                   , float* flag, const unsigned int f) {
 
   SimpleTimer timer(__FUNCTION__);
 
@@ -248,12 +369,22 @@ void ampBlackScholes(float* inputPtr
   array_view<float> callView(extent<1>(num), gpuCall);
   array_view<float> putView(extent<1>(num), gpuPut);
 
-  parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
-    float call, put;
-    calculateBlackScholes(inputView[id[0]], &call, &put); 
-    callView[id[0]] = call;
-    putView[id[0]] = put;
-  });
+  array_view<float> flagView(extent<1>(1),flag);
+  {
+    char b[128];
+    sprintf(b,"%s kernel",__FUNCTION__);
+    SimpleTimer timer(b);
+
+    parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
+      float call, put;
+      calculateBlackScholes(inputView[id[0]], &call, &put); 
+      callView[id[0]] = call;
+      putView[id[0]] = put;
+
+      if (id[0]==f) flagView[0] = put;
+    });
+    flagView.synchronize();
+  }
 
   callView.synchronize();
   putView.synchronize();
@@ -311,11 +442,48 @@ int main(int argc, char** argv) {
   float* gpuCall = new float[arg.numInput];
 
 #ifdef ENABLE_OPENCL
+
+  OpenCLBlackScholes* oclBlackScholes = new OpenCLBlackScholes();
+  oclBlackScholes->run(inputPtr, gpuCall, gpuPut
+                      , arg.numInput
+                      , OpenCLBlackScholes::BS_HOST_ZERO_COPY);
+  verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
+
+
+  memset(gpuPut,0,arg.numInput*sizeof(float));
+  memset(gpuCall,0,arg.numInput*sizeof(float));
+  oclBlackScholes->run(inputPtr, gpuCall, gpuPut
+                      , arg.numInput
+                      , OpenCLBlackScholes::BS_BUFFER_COPY);
+  verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
+
+
+/*
+  Program program = openclSetup();
+
   memset(gpuPut,0,arg.numInput*sizeof(float));
   memset(gpuCall,0,arg.numInput*sizeof(float));
 
-  openclBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
+  openclBlackScholes(program, inputPtr, gpuCall, gpuPut, arg.numInput);
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
+
+  memset(gpuPut,0,arg.numInput*sizeof(float));
+  memset(gpuCall,0,arg.numInput*sizeof(float));
+
+  openclCopyBufferBlackScholes(program, inputPtr, gpuCall, gpuPut, arg.numInput);
+  verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
+*/
+
+
+  {
+#ifdef ENABLE_CODEXL
+    amdtScopedMarker marker("~OpenCLBlackScholes()",NULL);
+#endif
+    SimpleTimer timer("~OpenCLBlackScholes()");
+
+    delete oclBlackScholes;
+  }
+
 #endif
 
 
@@ -326,8 +494,12 @@ int main(int argc, char** argv) {
   ampZeroArray(gpuCall, arg.numInput);
   ampZeroArray(gpuPut, arg.numInput);
 
-
-  ampBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput);
+  {
+    float flag;
+    unsigned int f = 0;
+    ampBlackScholes(inputPtr, gpuCall, gpuPut, arg.numInput
+                    , &flag, f);
+  }
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
 
   ampZeroArray(gpuCall, arg.numInput);
@@ -338,6 +510,8 @@ int main(int argc, char** argv) {
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
 
 #endif
+
+  
 
   delete[] cpuPut;
   delete[] cpuCall;
