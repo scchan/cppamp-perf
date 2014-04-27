@@ -5,7 +5,7 @@
 #CLANG_AMP_BUILD_DIR=$HOME/Development/cppamp/cppamp-driver-ng/build # where you build
 
 CLANG_AMP_HOME=$HOME/Code/cppamp/src # where you checkout source
-CLANG_AMP_BUILD_DIR=$HOME/Code/cppamp/build # where you build
+CLANG_AMP_BUILD_DIR=$HOME/Code/cppamp/release_build # where you build
 
 
 #OpenCL settings

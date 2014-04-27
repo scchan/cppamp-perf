@@ -386,8 +386,18 @@ void ampBlackScholes(float* inputPtr
     flagView.synchronize();
   }
 
-  callView.synchronize();
-  putView.synchronize();
+  {
+    char b[128];
+    sprintf(b,"%s: synchronize callView",__FUNCTION__);
+    SimpleTimer timer(b);
+    callView.synchronize();
+  }
+  {
+    char b[128];
+    sprintf(b,"%s: synchronize putView",__FUNCTION__);
+    SimpleTimer timer(b);
+    putView.synchronize();
+  }
 }
 
 void ampArrayBlackScholes(float* inputPtr
