@@ -3,16 +3,29 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <process.h>
+
+#define GETPID()  _getpid()
+
 #else
 #include <sys/time.h>
+#include <sys/types.h>
 #include <linux/limits.h>
 #include <unistd.h>
+
+#define GETPID()  getpid()
+
 #endif
 
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <stack>
 #include <queue>
+
+#include "GoogleTimelineTemplate.h"
+
 
 class TimerEvent {
 public:
@@ -83,6 +96,7 @@ public:
      TimerEvent* e = new TimerEvent(name);
      e->recordStartTime();
      e->nestedLevel = timerStack.size();
+     maxNestedLevel = (e->nestedLevel > maxNestedLevel)?e->nestedLevel:maxNestedLevel;
      timerStack.push(e);
      startQueue.push(e);
   }
@@ -106,9 +120,48 @@ public:
     }
   }
 
+  void dumpTimerStackTimeline() {
+
+    std::stringstream filename;
+    filename << (int)GETPID() << ".html";
+    std::ofstream file;
+    file.open(filename.str().c_str(),std::ios::trunc);
+    
+    std::stringstream table;
+
+#define ADD_COLUMN(stream,type,id) (stream) << "dataTable.addColumn({ type: '" << (type) << "', id: '" << (id) << "'});" << std::endl;
+
+    ADD_COLUMN(table,std::string("string"),std::string("Nested Level"));
+    ADD_COLUMN(table,std::string("string"),std::string("Name"));
+    ADD_COLUMN(table,std::string("date"),std::string("Start"));
+    ADD_COLUMN(table,std::string("date"),std::string("End"));
+
+    table << "dataTable.addRows([" << std::endl;
+#define ADD_ROW(stream,nestedLevel,name,start,end) (stream) << "[ '" << (nestedLevel) << "', '" << (name) \
+                  << "', new Date(" << (start) << "), new Date(" << (end) << ")]" << "," << std::endl; 
+
+    for (unsigned int i = 0; i < startQueue.size(); i++) {
+      TimerEvent* e = startQueue.front();
+      ADD_ROW(table,e->nestedLevel,e->name,e->startTime,e->endTime);
+      startQueue.pop();
+      startQueue.push(e);
+    }
+
+    table << "]);" << std::endl;
+
+    std::string htmlString = std::string(html_template);
+    size_t location = htmlString.find("<TIMELINE_CHART_DATA>");
+    htmlString.replace(location, std::string("<TIMELINE_CHART_DATA>").size(), table.str());
+    file << htmlString;
+    
+    file.close();
+  }
+
+
+
   ~TimerStack() {
     delete timer;
-
+    dumpTimerStackTimeline();
     dumpTimerStack();
 
     // delete all the timer events
@@ -120,6 +173,8 @@ public:
 
 private:
   std::stack<TimerEvent*> timerStack;
+  unsigned int maxNestedLevel;
+
   std::queue<TimerEvent*> startQueue;
   std::queue<TimerEvent*> endQueue;
   Timer* timer;
@@ -137,9 +192,9 @@ Timer::~Timer() {
 }
 
 TimerStack::TimerStack(){
+  maxNestedLevel = 0;
   if (Timer::defaultTimerStack==NULL)
     Timer::defaultTimerStack = this;
-
   timer = new Timer(std::string("TimerStack"));
 }
 
