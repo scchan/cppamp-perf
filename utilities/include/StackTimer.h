@@ -6,6 +6,7 @@
 #include <process.h>
 
 #define GETPID()  _getpid()
+#define ATTRIBUTE_WEAK  __declspec(selectany)
 
 #else
 #include <sys/time.h>
@@ -14,6 +15,7 @@
 #include <unistd.h>
 
 #define GETPID()  getpid()
+#define ATTRIBUTE_WEAK  __attribute__((weak))
 
 #endif
 
@@ -25,7 +27,6 @@
 #include <queue>
 
 #include "GoogleTimelineTemplate.h"
-
 
 class TimerEvent {
 public:
@@ -84,8 +85,8 @@ public:
   std::string name;
   TimerStack* tsp;
 };
-TimerStack* Timer::defaultTimerStack=NULL;
 
+TimerStack* ATTRIBUTE_WEAK Timer::defaultTimerStack=NULL;
 
 class TimerStack {
 public:
@@ -149,7 +150,7 @@ public:
 
     table << "]);" << std::endl;
 
-    std::string htmlString = std::string(html_template);
+    std::string htmlString = std::string(google_html_template);
     size_t location = htmlString.find("<TIMELINE_CHART_DATA>");
     htmlString.replace(location, std::string("<TIMELINE_CHART_DATA>").size(), table.str());
     file << htmlString;
