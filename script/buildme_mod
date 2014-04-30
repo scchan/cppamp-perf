@@ -22,7 +22,7 @@ CLAMP_CXXFLAGS=`$CLAMP_CONFIG --build --cxxflags`
 CLAMP_LDFLAGS=`$CLAMP_CONFIG --build --ldflags`
 CLAMP_DEVICE=$CLANG_AMP_BUILD_DIR/lib/clamp-device
 CLAMP_EMBED=$CLANG_AMP_BUILD_DIR/lib/clamp-embed
-SHARED_CXXFLAGS="$CLAMP_CXXFLAGS -I./include -I$OPENCL_INC"
+SHARED_CXXFLAGS="$CLAMP_CXXFLAGS -I./include -I$OPENCL_INC -I/usr/include/x86_64-linux-gnu"
 
 
 source=$1
