@@ -1,15 +1,16 @@
 
 #include <cstdlib>
 #include "StackTimer.h"
-#include "stack_timer.h"
+//#include "stack_timer.h"
+
+TimerStack* Timer::defaultTimerStack=NULL;
+TimerStack timerStack;
 
 struct stimer_struct {
   Timer* timer;
 };
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 STimer timer_start(const char* name) {
   STimer t = (STimer) malloc(sizeof(stimer_struct));
@@ -22,7 +23,5 @@ void timer_stop(STimer t) {
   free(t);
 }
 
-#ifdef __cplusplus
 }
-#endif
 

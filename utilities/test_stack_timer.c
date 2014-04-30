@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-#include "stack_timer.h"
+#include "StackTimer.h"
 
 
 int foo(int a) {

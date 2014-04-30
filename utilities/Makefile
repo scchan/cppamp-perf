@@ -15,7 +15,7 @@ stack_timer.o: stack_timer.cpp
 
 
 test_stack_timer: test_stack_timer.c libStackTimer.so
-	gcc $^ -lStackTimer $(CPPFLAGS) -o $@
+	gcc $^ -lStackTimer $(CPPFLAGS) -L. -o $@
 
 
 clean:

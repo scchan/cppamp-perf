@@ -19,6 +19,9 @@
 
 #endif
 
+
+#ifdef __cplusplus
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -85,8 +88,6 @@ public:
   std::string name;
   TimerStack* tsp;
 };
-
-TimerStack* ATTRIBUTE_WEAK Timer::defaultTimerStack=NULL;
 
 class TimerStack {
 public:
@@ -200,7 +201,24 @@ TimerStack::TimerStack(){
 }
 
 // default timerStack object
-TimerStack ATTRIBUTE_WEAK timerStack;
+extern TimerStack timerStack;
+
+#endif // #ifdef __cplusplus
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct stimer_struct* STimer; 
+
+STimer timer_start(const char* name);
+void timer_stop(STimer timer);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 #endif // #endif  _SIMPLETIMER_H
 
