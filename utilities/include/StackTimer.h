@@ -199,5 +199,8 @@ TimerStack::TimerStack(){
   timer = new Timer(std::string("TimerStack"));
 }
 
+// default timerStack object
+TimerStack ATTRIBUTE_WEAK timerStack;
+
 #endif // #endif  _SIMPLETIMER_H
 

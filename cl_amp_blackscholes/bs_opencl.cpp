@@ -26,7 +26,6 @@ using namespace concurrency;
 #include "readfile.hpp"
 //#include "Timer.h"
 #include "StackTimer.h"
-TimerStack timerStack;
 
 static void genRandomInput(float* array, unsigned int n) {
 #ifdef ENABLE_CODEXL

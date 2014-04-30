@@ -1,6 +1,12 @@
 
 #include "openclkernelhelper.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 const char* google_html_template = STRINGIFY(
 
 <head>
@@ -32,3 +38,9 @@ const char* google_html_template = STRINGIFY(
 </html>
 
 );
+
+
+#ifdef __cplusplus
+}
+#endif
+
