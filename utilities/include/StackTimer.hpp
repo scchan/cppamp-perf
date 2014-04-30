@@ -1,12 +1,11 @@
-#ifndef _SIMPLETIMER_H
-#define _SIMPLETIMER_H
+#ifndef _STACKTIMER_HPP
+#define _STACKTIMER_HPP
 
 #ifdef _WIN32
 #include <Windows.h>
 #include <process.h>
 
 #define GETPID()  _getpid()
-#define ATTRIBUTE_WEAK  __declspec(selectany)
 
 #else
 #include <sys/time.h>
@@ -15,7 +14,6 @@
 #include <unistd.h>
 
 #define GETPID()  getpid()
-#define ATTRIBUTE_WEAK  __attribute__((weak))
 
 #endif
 
@@ -29,7 +27,6 @@
 #include <stack>
 #include <queue>
 
-#include "GoogleTimelineTemplate.h"
 
 class TimerEvent {
 public:
@@ -122,48 +119,9 @@ public:
     }
   }
 
-  void dumpTimerStackTimeline() {
-
-    std::stringstream filename;
-    filename << (int)GETPID() << ".html";
-    std::ofstream file;
-    file.open(filename.str().c_str(),std::ios::trunc);
-    
-    std::stringstream table;
-
-#define ADD_COLUMN(stream,type,id) (stream) << "dataTable.addColumn({ type: '" << (type) << "', id: '" << (id) << "'});" << std::endl;
-
-    ADD_COLUMN(table,std::string("string"),std::string("Nested Level"));
-    ADD_COLUMN(table,std::string("string"),std::string("Name"));
-    ADD_COLUMN(table,std::string("date"),std::string("Start"));
-    ADD_COLUMN(table,std::string("date"),std::string("End"));
-
-    table << "dataTable.addRows([" << std::endl;
-#define ADD_ROW(stream,nestedLevel,name,start,end) (stream) << "[ '" << (nestedLevel) << "', '" << (name) \
-                  << "', new Date(" << (start) << "), new Date(" << (end) << ")]" << "," << std::endl; 
-
-    for (unsigned int i = 0; i < startQueue.size(); i++) {
-      TimerEvent* e = startQueue.front();
-      ADD_ROW(table,e->nestedLevel,e->name,e->startTime,e->endTime);
-      startQueue.pop();
-      startQueue.push(e);
-    }
-
-    table << "]);" << std::endl;
-
-    std::string htmlString = std::string(google_html_template);
-    size_t location = htmlString.find("<TIMELINE_CHART_DATA>");
-    htmlString.replace(location, std::string("<TIMELINE_CHART_DATA>").size(), table.str());
-    file << htmlString;
-    
-    file.close();
-  }
-
-
-
   ~TimerStack() {
     delete timer;
-    dumpTimerStackTimeline();
+    dumpTimerStackGoogleTimeline();
     dumpTimerStack();
 
     // delete all the timer events
@@ -180,6 +138,8 @@ private:
   std::queue<TimerEvent*> startQueue;
   std::queue<TimerEvent*> endQueue;
   Timer* timer;
+
+  void dumpTimerStackGoogleTimeline();
 };
 
 
@@ -220,5 +180,5 @@ void timer_stop(STimer timer);
 
 
 
-#endif // #endif  _SIMPLETIMER_H
+#endif // #endif  _STACKTIMER_HPP
 

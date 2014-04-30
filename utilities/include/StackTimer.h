@@ -1,6 +1,6 @@
 
-#ifndef _STACK_TIMER_H
-#define _STACK_TIMER_H
+#ifndef _STACKTIMER_H
+#define _STACKTIMER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,4 +16,4 @@ void timer_stop(STimer timer);
 #endif
 
 
-#endif // #ifndef _STACK_TIMER_H
+#endif // #ifndef _STACKTIMER_H

@@ -1,22 +1,31 @@
 
-CC=g++
+CC=gcc
+CXX=g++
 
-CPPFLAGS+=-I./include
-CPPFLAGS+=-O3
+
+
+COMMON_FLAGS+=-I./include
+COMMON_FLAGS+=-O3
+
+CFLAGS+=$(COMMON_FLAGS)
+CXXFLAGS+=$(COMMON_FLAGS)
+
 
 all: libStackTimer.so test_stack_timer
 
 
-libStackTimer.so: stack_timer.o
-	$(CC) $^ -shared -o $@
+libStackTimer.so: StackTimer.o
+	$(CXX) $^ -shared -o $@
 
-stack_timer.o: stack_timer.cpp
-	$(CC) -fPIC $(CPPFLAGS) -c $^
+StackTimer.o: StackTimer.cpp
+	$(CXX) -fPIC $(CXXFLAGS) -c $^
 
 
 test_stack_timer: test_stack_timer.c libStackTimer.so
-	gcc $^ -lStackTimer $(CPPFLAGS) -L. -o $@
+	$(CC) $@.c -lStackTimer $(CFLAGS) -L. -o $@
 
+install: all
+	cp libStackTimer.so test_stack_timer ./bin
 
 clean:
-	rm -f *.o stack_timer test_stack_timer
+	rm -f *.o libStackTimer.so test_stack_timer

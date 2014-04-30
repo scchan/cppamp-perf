@@ -4,11 +4,16 @@ CC=g++
 CPPFLAGS+=-I$(AMDAPPSDKROOT)/include 
 LDFLAGS+=-L$(AMDAPPSDKROOT)/lib/x86_64 -lOpenCL
 
-CPPFLAGS+=-I../utilities/include
+
+
+UTIL_INCLUDE=-I../utilities/include
+UTIL_LIB=-L../utilities/bin -lStackTimer
+CPPFLAGS+=$(UTIL_INCLUDE)
+LDFLAGS+=$(UTIL_LIB)
 
 
 CPPFLAGS+=-g
-CPPFLAGS+=-O3
+#CPPFLAGS+=-O3
 
 CPPFLAGS+=-DENABLE_OPENCL
 
@@ -32,7 +37,7 @@ bs_opencl: bs_opencl.o
 
 
 bs_amp: bs_opencl.cpp
-	../script/buildme_mod bs_opencl.cpp -I../utilities/include -DENABLE_CPPAMP;mv bs_opencl.cpp.out bs_amp
+	../script/buildme_mod bs_opencl.cpp -I../utilities/include -DENABLE_CPPAMP $(UTIL_INCLUDE) $(UTIL_LIB);mv bs_opencl.cpp.out bs_amp
 
 clean:
 	rm -f bs_opencl bs_amp kernel.* *.o *.ll

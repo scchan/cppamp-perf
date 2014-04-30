@@ -24,8 +24,7 @@ using namespace concurrency;
 
 #include "bs_kernel.h"
 #include "readfile.hpp"
-//#include "Timer.h"
-#include "StackTimer.h"
+#include "StackTimer.hpp"
 
 static void genRandomInput(float* array, unsigned int n) {
 #ifdef ENABLE_CODEXL
@@ -333,7 +332,6 @@ public:
     parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
       v[id[0]] = 0.0f;
     });
-    v.synchronize();
   }
 
   enum AMPBSMode {
