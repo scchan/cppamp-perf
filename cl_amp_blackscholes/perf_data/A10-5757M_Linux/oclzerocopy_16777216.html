@@ -1,0 +1,34 @@
+<head> <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization', 'version':'1','packages':['timeline']}]}"></script> <script type="text/javascript"> google.setOnLoadCallback(drawChart); function drawChart() { var container = document.getElementById('example1'); var chart = new google.visualization.Timeline(container); var dataTable = new google.visualization.DataTable(); dataTable.addColumn({ type: 'string', id: 'Nested Level'});
+dataTable.addColumn({ type: 'string', id: 'Name'});
+dataTable.addColumn({ type: 'date', id: 'Start'});
+dataTable.addColumn({ type: 'date', id: 'End'});
+dataTable.addRows([
+[ '0', 'TimerStack', new Date(1398980347697), new Date(1398980354938)],
+[ '1', 'main', new Date(1398980347697), new Date(1398980354938)],
+[ '2', 'genRandomInput', new Date(1398980347698), new Date(1398980347977)],
+[ '2', 'cpuBlackScholes', new Date(1398980347977), new Date(1398980352316)],
+[ '2', 'OpenCLBlackScholes', new Date(1398980352601), new Date(1398980352696)],
+[ '2', 'runBlackScholes', new Date(1398980352696), new Date(1398980352905)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980352696), new Date(1398980352905)],
+[ '2', 'runBlackScholes', new Date(1398980352905), new Date(1398980353118)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980352905), new Date(1398980353118)],
+[ '2', 'runBlackScholes', new Date(1398980353118), new Date(1398980353327)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980353118), new Date(1398980353327)],
+[ '2', 'runBlackScholes', new Date(1398980353327), new Date(1398980353535)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980353327), new Date(1398980353535)],
+[ '2', 'runBlackScholes', new Date(1398980353535), new Date(1398980353747)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980353535), new Date(1398980353747)],
+[ '2', 'runBlackScholes', new Date(1398980353747), new Date(1398980353956)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980353747), new Date(1398980353956)],
+[ '2', 'runBlackScholes', new Date(1398980353956), new Date(1398980354170)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980353956), new Date(1398980354170)],
+[ '2', 'runBlackScholes', new Date(1398980354170), new Date(1398980354382)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980354170), new Date(1398980354382)],
+[ '2', 'runBlackScholes', new Date(1398980354382), new Date(1398980354599)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980354382), new Date(1398980354599)],
+[ '2', 'runBlackScholes', new Date(1398980354599), new Date(1398980354814)],
+[ '3', 'runBlackScholesZeroCopy', new Date(1398980354599), new Date(1398980354814)],
+[ '2', 'verifyBlackScholes', new Date(1398980354814), new Date(1398980354903)],
+[ '2', '~OpenCLBlackScholes()', new Date(1398980354903), new Date(1398980354907)],
+]);
+ chart.draw(dataTable); } </script> </head> <body> <div id="example1" style="width: 1280px; height: 480px;"></div> </body> </html>

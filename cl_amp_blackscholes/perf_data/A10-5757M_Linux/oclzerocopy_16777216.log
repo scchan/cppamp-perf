@@ -1,0 +1,29 @@
+Number of input: 16777216
+Verified!
+TimerStack: 7241ms
+|_main: 7241ms
+  |_genRandomInput: 279ms
+  |_cpuBlackScholes: 4339ms
+  |_OpenCLBlackScholes: 95ms
+  |_runBlackScholes: 209ms
+    |_runBlackScholesZeroCopy: 209ms
+  |_runBlackScholes: 213ms
+    |_runBlackScholesZeroCopy: 213ms
+  |_runBlackScholes: 209ms
+    |_runBlackScholesZeroCopy: 209ms
+  |_runBlackScholes: 208ms
+    |_runBlackScholesZeroCopy: 208ms
+  |_runBlackScholes: 212ms
+    |_runBlackScholesZeroCopy: 212ms
+  |_runBlackScholes: 209ms
+    |_runBlackScholesZeroCopy: 209ms
+  |_runBlackScholes: 214ms
+    |_runBlackScholesZeroCopy: 214ms
+  |_runBlackScholes: 212ms
+    |_runBlackScholesZeroCopy: 212ms
+  |_runBlackScholes: 217ms
+    |_runBlackScholesZeroCopy: 217ms
+  |_runBlackScholes: 215ms
+    |_runBlackScholesZeroCopy: 215ms
+  |_verifyBlackScholes: 89ms
+  |_~OpenCLBlackScholes(): 4ms

@@ -1,0 +1,30 @@
+Number of input: 16777216
+Verified!
+TimerStack: 30933ms
+|_main: 30744ms
+  |_genRandomInput: 273ms
+  |_cpuBlackScholes: 2190ms
+  |_zeroArray: 1064ms
+  |_zeroArray: 821ms
+  |_runBlackScholes: 2545ms
+    |_runBlackScholesArrayView: 2545ms
+  |_runBlackScholes: 2704ms
+    |_runBlackScholesArrayView: 2704ms
+  |_runBlackScholes: 2597ms
+    |_runBlackScholesArrayView: 2597ms
+  |_runBlackScholes: 2615ms
+    |_runBlackScholesArrayView: 2615ms
+  |_runBlackScholes: 2570ms
+    |_runBlackScholesArrayView: 2570ms
+  |_runBlackScholes: 2674ms
+    |_runBlackScholesArrayView: 2674ms
+  |_runBlackScholes: 2657ms
+    |_runBlackScholesArrayView: 2657ms
+  |_runBlackScholes: 2674ms
+    |_runBlackScholesArrayView: 2674ms
+  |_runBlackScholes: 2685ms
+    |_runBlackScholesArrayView: 2685ms
+  |_runBlackScholes: 2591ms
+    |_runBlackScholesArrayView: 2591ms
+  |_verifyBlackScholes: 54ms
+  |_~ampBlackScholes(): 0ms

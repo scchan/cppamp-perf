@@ -44,7 +44,7 @@ $CLAMP_EMBED kernel.cl kernel.o
 
 # CPU Path
 
-CPU_COMPILE="$CLANG_AMP $SHARED_CXXFLAGS $source -D__CPU__=1 $CLAMP_LDFLAGS kernel.o -o $source.out -g $@"
+CPU_COMPILE="$CLANG_AMP $SHARED_CXXFLAGS $source -D__CPU__=1 $CLAMP_LDFLAGS kernel.o -o $source.out -g -O3 $@"
 echo "Compiling for CPU path; output is $source.out:   $CPU_COMPILE"
 $CPU_COMPILE
 

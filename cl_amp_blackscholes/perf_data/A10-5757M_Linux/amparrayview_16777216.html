@@ -1,0 +1,35 @@
+<head> <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization', 'version':'1','packages':['timeline']}]}"></script> <script type="text/javascript"> google.setOnLoadCallback(drawChart); function drawChart() { var container = document.getElementById('example1'); var chart = new google.visualization.Timeline(container); var dataTable = new google.visualization.DataTable(); dataTable.addColumn({ type: 'string', id: 'Nested Level'});
+dataTable.addColumn({ type: 'string', id: 'Name'});
+dataTable.addColumn({ type: 'date', id: 'Start'});
+dataTable.addColumn({ type: 'date', id: 'End'});
+dataTable.addRows([
+[ '0', 'TimerStack', new Date(1398981999817), new Date(1398982030750)],
+[ '1', 'main', new Date(1398982000005), new Date(1398982030749)],
+[ '2', 'genRandomInput', new Date(1398982000005), new Date(1398982000278)],
+[ '2', 'cpuBlackScholes', new Date(1398982000278), new Date(1398982002468)],
+[ '2', 'zeroArray', new Date(1398982002468), new Date(1398982003532)],
+[ '2', 'zeroArray', new Date(1398982003532), new Date(1398982004353)],
+[ '2', 'runBlackScholes', new Date(1398982004353), new Date(1398982006898)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982004353), new Date(1398982006898)],
+[ '2', 'runBlackScholes', new Date(1398982006898), new Date(1398982009602)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982006898), new Date(1398982009602)],
+[ '2', 'runBlackScholes', new Date(1398982009602), new Date(1398982012199)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982009602), new Date(1398982012199)],
+[ '2', 'runBlackScholes', new Date(1398982012199), new Date(1398982014814)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982012199), new Date(1398982014814)],
+[ '2', 'runBlackScholes', new Date(1398982014814), new Date(1398982017384)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982014814), new Date(1398982017384)],
+[ '2', 'runBlackScholes', new Date(1398982017384), new Date(1398982020058)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982017384), new Date(1398982020058)],
+[ '2', 'runBlackScholes', new Date(1398982020058), new Date(1398982022715)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982020058), new Date(1398982022715)],
+[ '2', 'runBlackScholes', new Date(1398982022715), new Date(1398982025389)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982022715), new Date(1398982025389)],
+[ '2', 'runBlackScholes', new Date(1398982025389), new Date(1398982028074)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982025389), new Date(1398982028074)],
+[ '2', 'runBlackScholes', new Date(1398982028074), new Date(1398982030665)],
+[ '3', 'runBlackScholesArrayView', new Date(1398982028074), new Date(1398982030665)],
+[ '2', 'verifyBlackScholes', new Date(1398982030665), new Date(1398982030719)],
+[ '2', '~ampBlackScholes()', new Date(1398982030719), new Date(1398982030719)],
+]);
+ chart.draw(dataTable); } </script> </head> <body> <div id="example1" style="width: 1280px; height: 480px;"></div> </body> </html>

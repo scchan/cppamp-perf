@@ -63,6 +63,10 @@ void verifyBlackScholes(const float* cpuCall, const float* cpuPut
   std::cout << "Verified!" << std::endl;
 }
 
+
+
+// OpenCL version of BlackScholes
+
 #ifdef ENABLE_OPENCL
 
 #include <CL/cl.h>
@@ -96,50 +100,56 @@ public:
     ,BS_BUFFER_COPY
   };
 
+  void runBlackScholesZeroCopy(float* input
+           , float* call
+           , float* put
+           , const unsigned int num) {
+    AUTOTIMER(timer,__FUNCTION__);
+
+    Buffer inputBuffer, putBuffer, callBuffer;
+
+    createBufferZeroCopy(num
+                         ,inputBuffer, input
+                         ,callBuffer, call
+                         ,putBuffer, put);
+    runKernel(num,inputBuffer,callBuffer,putBuffer);
+    mapBufferZeroCopy(num, callBuffer, putBuffer); 
+  }
+
+  void runBlackScholesBufferCopy(float* input
+           , float* call
+           , float* put
+           , const unsigned int num) {
+    AUTOTIMER(timer,__FUNCTION__);
+
+    Buffer inputBuffer, putBuffer, callBuffer;
+    createDeviceBuffer(num
+                       ,inputBuffer, input
+                       ,callBuffer
+                       ,putBuffer);
+    runKernel(num,inputBuffer,callBuffer,putBuffer);
+    copyFromBuffer(num
+                   , callBuffer, call
+                   , putBuffer, put); 
+}
   void runBlackScholes(float* input
            , float* call
            , float* put
            , const unsigned int num
-           , const OpenCLBSMode mode
-           , const unsigned int iterations) {
+           , const OpenCLBSMode mode) {
     AUTOTIMER(timer,__FUNCTION__);
 
-    Buffer inputBuffer, putBuffer, callBuffer;
     switch(mode) {
       case BS_HOST_ZERO_COPY:
-        createBufferZeroCopy(num
-                             ,inputBuffer, input
-                             ,callBuffer, call
-                             ,putBuffer, put);
-      break;
+        runBlackScholesZeroCopy(input,call,put,num);
+        break;
       case BS_BUFFER_COPY:
-        createDeviceBuffer(num
-                             ,inputBuffer, input
-                             ,callBuffer
-                             ,putBuffer);
-      break;
+        runBlackScholesBufferCopy(input,call,put,num);
+        break;
       default:
       return;
       break;
     };
-
-    for (unsigned int i = 0; i < iterations; i++) {
-      runKernel(num,inputBuffer,callBuffer,putBuffer);
-    }
-
-    switch(mode) {
-      case BS_HOST_ZERO_COPY:
-        mapBufferZeroCopy(num, callBuffer, putBuffer); 
-      break;
-      case BS_BUFFER_COPY:
-        copyFromBuffer(num 
-                       ,callBuffer, call
-                       ,putBuffer, put);
-      break;
-      default:
-      break;
-    }
-                  
   }
   
 
@@ -154,8 +164,7 @@ private:
                             , Buffer& inputBuffer, float* input
                             , Buffer& callBuffer, float* call
                             , Buffer& putBuffer, float* put) {
-    AUTOTIMER(timer,__FUNCTION__);
-
+    //AUTOTIMER(timer,__FUNCTION__);
     inputBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_READ_ONLY, num*sizeof(float), input);
     putBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY, num*sizeof(float), put);
     callBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY, num*sizeof(float), call);
@@ -164,8 +173,7 @@ private:
   void mapBufferZeroCopy(const unsigned int num
                          , Buffer& callBuffer
                          , Buffer& putBuffer) {
-    AUTOTIMER(timer,__FUNCTION__);
-
+    //AUTOTIMER(timer,__FUNCTION__);
     std::vector<Event> mapEvents;
     mapEvents.resize(2);
     queue.enqueueMapBuffer(putBuffer, CL_FALSE
@@ -185,20 +193,18 @@ private:
                          , Buffer& inputBuffer, float* input
                          , Buffer& callBuffer
                          , Buffer& putBuffer) {
-    AUTOTIMER(timer,__FUNCTION__);
-
+    //AUTOTIMER(timer,__FUNCTION__);
     inputBuffer = Buffer(context, CL_MEM_READ_ONLY, num*sizeof(float));
     queue.enqueueWriteBuffer(inputBuffer,CL_FALSE,0,num*sizeof(float),input);
 
     putBuffer = Buffer(context, CL_MEM_WRITE_ONLY, num*sizeof(float));
     callBuffer = Buffer(context, CL_MEM_WRITE_ONLY, num*sizeof(float));
-    queue.finish();
   }
 
   void copyFromBuffer(const unsigned int num
                       , Buffer& callBuffer, float* call
                       , Buffer& putBuffer, float* put) {
-    AUTOTIMER(timer,__FUNCTION__);
+    //AUTOTIMER(timer,__FUNCTION__);
 
     queue.enqueueReadBuffer(putBuffer, CL_FALSE, 0, num*sizeof(float), put);
     queue.enqueueReadBuffer(callBuffer, CL_FALSE, 0, num*sizeof(float), call);
@@ -207,21 +213,21 @@ private:
 
   void runKernel(const unsigned int num,
                  Buffer& input, Buffer& call, Buffer& put) {
-    AUTOTIMER(timer,__FUNCTION__);
+    //AUTOTIMER(timer,__FUNCTION__);
 
-    //for (int i = 0; i < 10; i++)
     kernel.setArg(0, input);
     kernel.setArg(1, call);
     kernel.setArg(2, put);
     queue.enqueueNDRangeKernel(kernel, NullRange, NDRange(num));
-
-    queue.finish();
   }
-
-
 };
 
 #endif
+
+
+
+
+// C++AMP version of BlackScholes
 
 #ifdef ENABLE_CPPAMP
 
@@ -229,7 +235,7 @@ class AMPBlackScholes {
 
 public:
   
-  void ampZeroCPUArray(float* a, unsigned int num) {
+  void zeroArray(float* a, unsigned int num) {
     AUTOTIMER(timer,__FUNCTION__);
     array_view<float> v(extent<1>(num), a);
     parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
@@ -244,92 +250,63 @@ public:
 
   void runBlackScholesArrayView(float* inputPtr
                    , float* gpuCall, float* gpuPut
-                   , const unsigned int num
-                   , const unsigned int iterations
-                   , float* flag, const unsigned int f) {
+                   , const unsigned int num) {
 
     AUTOTIMER(timer,__FUNCTION__);
 
     array_view<float> inputView(extent<1>(num), inputPtr);
     array_view<float> callView(extent<1>(num), gpuCall);
     array_view<float> putView(extent<1>(num), gpuPut);
-    array_view<float> flagView(extent<1>(1),flag);
+    
+    callView.discard_data();
+    putView.discard_data();
 
-    for (unsigned int i = 0; i < iterations; i++) {
-      AUTOTIMER(timer,"kernel");
-      parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
-        float call, put;
-        calculateBlackScholes(inputView[id[0]], &call, &put); 
-        callView[id[0]] = call;
-        putView[id[0]] = put;
+    parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
+      float call, put;
+      calculateBlackScholes(inputView[id[0]], &call, &put); 
+      callView[id[0]] = call;
+      putView[id[0]] = put;
+    });
 
-        if (id[0]==f) flagView[0] = put;
-      });
-      flagView.synchronize();
-    }
-
-    {
-      AUTOTIMER(timer,"synchronize callView");
-      callView.synchronize();
-    }
-    {
-      AUTOTIMER(timer,"synchronize putView");
-      putView.synchronize();
-    }
+    completion_future cf = callView.synchronize_async();;
+    completion_future pf = putView.synchronize_async();;
+    cf.wait();
+    pf.wait();
   }
 
   void runBlackScholesArray(float* inputPtr
                    , float* gpuCall, float* gpuPut
-                   , const unsigned int num
-                   , const unsigned int iterations
-                   , float* flag, const unsigned int f) {
+                   , const unsigned int num) {
     AUTOTIMER(timer,__FUNCTION__);
 
     array<float,1> inputArray(extent<1>(num),inputPtr);
     array<float,1> callArray(num);
     array<float,1> putArray(num);
 
-    array_view<float> flagView(extent<1>(1),flag);
+    parallel_for_each(extent<1>(num), [&] (index<1> id) restrict(amp) {
+      float call, put;
+      calculateBlackScholes(inputArray[id[0]], &call, &put); 
+      callArray[id[0]] = call;
+      putArray[id[0]] = put;
+    });
 
-    for (unsigned int i = 0; i < iterations; i++) {
-      AUTOTIMER(timer,"kernel");
-      parallel_for_each(extent<1>(num), [&,flagView,f] (index<1> id) restrict(amp) {
-        float call, put;
-        calculateBlackScholes(inputArray[id[0]], &call, &put); 
-        callArray[id[0]] = call;
-        putArray[id[0]] = put;
-
-        if (id[0]==f) flagView[0] = put;
-      });
-      flagView.synchronize();
-    }
-
-    {
-      AUTOTIMER(timer,"synchronize callArray, putArray");
-      completion_future cf = copy_async(callArray, gpuCall);
-      completion_future pf = copy_async(putArray, gpuPut);
-      cf.wait();
-      pf.wait();
-    }
+    completion_future cf = copy_async(callArray, gpuCall);
+    completion_future pf = copy_async(putArray, gpuPut);
+    cf.wait();
+    pf.wait();
   }
 
   void runBlackScholes(float* inputPtr
                    , float* gpuCall, float* gpuPut
                    , const unsigned int num
-                   , const AMPBSMode mode
-                   , const unsigned int iterations
-                   , float* flag, const unsigned int f) {
+                   , const AMPBSMode mode) {
     AUTOTIMER(timer,__FUNCTION__);
     switch(mode) {
     case AMP_BS_ARRAY:
-      runBlackScholesArray(inputPtr, gpuCall, gpuPut
-                              , num, iterations
-                              , flag, f); 
+      runBlackScholesArray(inputPtr, gpuCall, gpuPut, num); 
       break;
     case AMP_BS_ARRAYVIEW:
-      runBlackScholesArrayView(inputPtr, gpuCall, gpuPut
-                           , num, iterations
-                           , flag, f); 
+      runBlackScholesArrayView(inputPtr, gpuCall, gpuPut, num); 
       break;
     default:
       return;
@@ -338,27 +315,28 @@ public:
 
 private:
 
-
-
 };
 
 #endif
+
+
+
+
 
 class Arg {
 
 public:
 
-  Arg(int argc, char** argv):argc(argc),argv(argv) {
-    numInput = 1024*1024;
-    iterations = 1;
-
+  Arg(int argc, char** argv):argc(argc),argv(argv)
+    ,numInput(1048576)
+    ,iterations(1)
 #ifdef ENABLE_OPENCL
-    oclMode = OpenCLBlackScholes::BS_HOST_ZERO_COPY;
+    ,oclMode(OpenCLBlackScholes::BS_HOST_ZERO_COPY)
 #endif
-
 #ifdef ENABLE_CPPAMP
-    ampMode = AMPBlackScholes::AMP_BS_ARRAYVIEW;
+    ,ampMode(AMPBlackScholes::AMP_BS_ARRAYVIEW)
 #endif
+  {
 
     for (int n = 1; n < argc; n++) {
       if (strcmp(argv[n],"-n")==0) {
@@ -432,26 +410,24 @@ int main(int argc, char** argv) {
   cpuPut = new float[arg.numInput];
   cpuCall = new float[arg.numInput];
   cpuBlackScholes(inputPtr, cpuCall, cpuPut, arg.numInput);
-  
 
-  // compute OpenCL BlackScholes 
-  float* gpuPut = new float[arg.numInput];
+    float* gpuPut = new float[arg.numInput];
   float* gpuCall = new float[arg.numInput];
 
 #ifdef ENABLE_OPENCL
+  // compute OpenCL BlackScholes 
+
   memset(gpuPut,0,arg.numInput*sizeof(float));
   memset(gpuCall,0,arg.numInput*sizeof(float));
 
   OpenCLBlackScholes* oclBlackScholes = new OpenCLBlackScholes();
-  oclBlackScholes->runBlackScholes(inputPtr, gpuCall, gpuPut
-                                    ,arg.numInput
-                                    ,arg.oclMode
-                                    ,arg.iterations);
+  for (unsigned int i = 0; i < arg.iterations; i++) {
+    oclBlackScholes->runBlackScholes(inputPtr, gpuCall, gpuPut
+                                      ,arg.numInput
+                                      ,arg.oclMode);
+  }
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
   {
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker("~OpenCLBlackScholes()",NULL);
-#endif
     AUTOTIMER(timer,"~OpenCLBlackScholes()");
 
     delete oclBlackScholes;
@@ -459,25 +435,23 @@ int main(int argc, char** argv) {
 #endif
 
 
-  // compute C++AMP BlackScholes
-
+  
 #ifdef ENABLE_CPPAMP
+  // compute C++AMP BlackScholes
 
   AMPBlackScholes* ampBlackScholes = new AMPBlackScholes();
 
-  // forcing the kernels to be compiled (if using SPIR path)
-  ampBlackScholes->ampZeroCPUArray(gpuCall, arg.numInput);
-  ampBlackScholes->ampZeroCPUArray(gpuPut,  arg.numInput);
+  // zero the arrays, this is mainly to force
+  // the kernels to compile (if using SPIR path)
+  ampBlackScholes->zeroArray(gpuCall, arg.numInput);
+  ampBlackScholes->zeroArray(gpuPut,  arg.numInput);
 
-  {
-    float flag;
-    unsigned int f = 0;
+  for (unsigned int i = 0; i < arg.iterations; i++) {
     ampBlackScholes->runBlackScholes(inputPtr, gpuCall, gpuPut
                                       ,arg.numInput
-                                      ,arg.ampMode
-                                      ,arg.iterations
-                                      , &flag, f);
+                                      ,arg.ampMode);
   }
+
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
   {
     AUTOTIMER(timer,"~ampBlackScholes()");
