@@ -5,10 +5,6 @@
 #include <iostream>
 #include <vector>
 
-#ifdef ENABLE_CODEXL
-  #include "AMDTActivityLogger.h"
-#endif
-
 #ifdef ENABLE_CPPAMP
 
 #include <amp.h>
@@ -16,85 +12,21 @@
 using namespace concurrency;
 
 #else
-
 #include <cmath>
-
 #endif
-
 
 #include "bs_kernel.h"
 #include "readfile.hpp"
 #include "StackTimer.hpp"
 
 static void genRandomInput(float* array, unsigned int n) {
-#ifdef ENABLE_CODEXL
-  amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
-#endif
   AUTOTIMER(timer,__FUNCTION__);
-
   for (unsigned int i = 0; i < n; i++) {
     array[i] = (float)rand() / (float)RAND_MAX;
   }
 }
 
-#ifdef ENABLE_CODEXL
-class amdActivityLogger {
-public:
-
-  amdActivityLogger() {
-    
-    marker = NULL;
-
-    int status = amdtInitializeActivityLogger();
-
-    profilerDetected = false;
-
-    switch (status) {
-    case AL_APP_PROFILER_NOT_DETECTED:
-      std::cerr << "CodeXL profiler not detected!" << std::endl;
-      break;
-    case AL_SUCCESS:
-      profilerDetected = true;
-      marker = new amdtScopedMarker("amdActivityLogger",NULL);
-    default:
-      std::cerr << "amdtInitializeActivityLogger error: " << status << std::endl;
-      exit(1);
-    };
-  };
-
-  ~amdActivityLogger() {
-    if (profilerDetected) {
-
-      if (marker!=NULL)
-        delete marker;
-
-      int status = amdtFinalizeActivityLogger();
-      switch (status) {
-      case AL_SUCCESS:
-        break;
-      case AL_UNINITIALIZED_ACTIVITY_LOGGER:
-      default:
-        std::cerr << "amdtFinalizeActivityLogger error: " << status << std::endl;
-        exit(1);
-      };
-    }
-  }
-
-private:
-  amdtScopedMarker* marker;
-  bool profilerDetected;
-};
-
-//amdActivityLogger logger;
-
-#endif
-
-
-
 void cpuBlackScholes(const float* input, float* call, float* put, unsigned int num) {
-#ifdef ENABLE_CODEXL
-  amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
-#endif
   AUTOTIMER(timer,__FUNCTION__);
   for (unsigned int i = 0; i < num; i++) {
     float c, p;
@@ -107,9 +39,6 @@ void cpuBlackScholes(const float* input, float* call, float* put, unsigned int n
 void verifyBlackScholes(const float* cpuCall, const float* cpuPut
                         , const float* gpuCall, const float* gpuPut
                         , const unsigned int num) {
-#ifdef ENABLE_CODEXL
-  amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
-#endif
   AUTOTIMER(timer,__FUNCTION__);
 
   // verify the results
@@ -147,9 +76,6 @@ class OpenCLBlackScholes {
 public:
 
   OpenCLBlackScholes(Device device=Device::getDefault()) {
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker((const char*)__FUNCTION__,"");
-#endif
     AUTOTIMER(timer,__FUNCTION__);
     try {
       context = Context(device);
@@ -176,10 +102,6 @@ public:
            , const unsigned int num
            , const OpenCLBSMode mode
            , const unsigned int iterations) {
-
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker((const char*)__FUNCTION__,"");
-#endif
     AUTOTIMER(timer,__FUNCTION__);
 
     Buffer inputBuffer, putBuffer, callBuffer;
@@ -232,9 +154,6 @@ private:
                             , Buffer& inputBuffer, float* input
                             , Buffer& callBuffer, float* call
                             , Buffer& putBuffer, float* put) {
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker((const char*)__FUNCTION__,"");
-#endif
     AUTOTIMER(timer,__FUNCTION__);
 
     inputBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_READ_ONLY, num*sizeof(float), input);
@@ -245,11 +164,7 @@ private:
   void mapBufferZeroCopy(const unsigned int num
                          , Buffer& callBuffer
                          , Buffer& putBuffer) {
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker((const char*)__FUNCTION__,"");
-#endif
     AUTOTIMER(timer,__FUNCTION__);
-
 
     std::vector<Event> mapEvents;
     mapEvents.resize(2);
@@ -270,9 +185,6 @@ private:
                          , Buffer& inputBuffer, float* input
                          , Buffer& callBuffer
                          , Buffer& putBuffer) {
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker((const char*)__FUNCTION__,"");
-#endif
     AUTOTIMER(timer,__FUNCTION__);
 
     inputBuffer = Buffer(context, CL_MEM_READ_ONLY, num*sizeof(float));
@@ -286,9 +198,6 @@ private:
   void copyFromBuffer(const unsigned int num
                       , Buffer& callBuffer, float* call
                       , Buffer& putBuffer, float* put) {
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker((const char*)__FUNCTION__,"");
-#endif
     AUTOTIMER(timer,__FUNCTION__);
 
     queue.enqueueReadBuffer(putBuffer, CL_FALSE, 0, num*sizeof(float), put);
@@ -298,10 +207,6 @@ private:
 
   void runKernel(const unsigned int num,
                  Buffer& input, Buffer& call, Buffer& put) {
-
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker((const char*)__FUNCTION__,"");
-#endif
     AUTOTIMER(timer,__FUNCTION__);
 
     //for (int i = 0; i < 10; i++)
@@ -320,11 +225,9 @@ private:
 
 #ifdef ENABLE_CPPAMP
 
-
 class AMPBlackScholes {
 
 public:
-
   
   void ampZeroCPUArray(float* a, unsigned int num) {
     AUTOTIMER(timer,__FUNCTION__);
@@ -439,10 +342,7 @@ private:
 
 };
 
-
 #endif
-
-
 
 class Arg {
 
@@ -521,13 +421,7 @@ private:
 
 int main(int argc, char** argv) {
 
-#ifdef ENABLE_CODEXL
-  amdActivityLogger logger;
-  amdtScopedMarker marker((const char*)__FUNCTION__,"dummy");
-#endif
-
   AUTOTIMER(timer,__FUNCTION__);
-
   Arg arg(argc,argv);
 
   float* inputPtr = new float[arg.numInput];
@@ -586,9 +480,6 @@ int main(int argc, char** argv) {
   }
   verifyBlackScholes(cpuCall, cpuPut, gpuCall, gpuPut, arg.numInput);
   {
-#ifdef ENABLE_CODEXL
-    amdtScopedMarker marker("~OpenCLBlackScholes()",NULL);
-#endif
     AUTOTIMER(timer,"~ampBlackScholes()");
     delete ampBlackScholes;
   }
