@@ -14,7 +14,11 @@ public:
   void StartTimer(const std::string& name);
   void StopTimer(const std::string& name);
   void dumpTimerStack();
+  void setLogPrefix(const std::string& prefix);
+  void setLogPrefix(const char* prefix);
   ~TimerStack();
+
+  static TimerStack* getDefaultTimerStack();
 
 private:
   std::stack<TimerEvent*> timerStack;
@@ -23,6 +27,7 @@ private:
   std::queue<TimerEvent*> startQueue;
   std::queue<TimerEvent*> endQueue;
   Timer* timer;
+  std::string prefix;
 
   void dumpTimerStackGoogleTimeline();
 };
@@ -35,7 +40,7 @@ public:
   ~Timer(); 
   private:
   std::string name;
-  TimerStack* tsp;
+    TimerStack* tsp;
 };
 
 #ifndef DISABLE_AUTOTIMER

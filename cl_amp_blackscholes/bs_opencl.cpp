@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #ifdef ENABLE_CPPAMP
@@ -332,9 +333,11 @@ public:
     ,iterations(1)
 #ifdef ENABLE_OPENCL
     ,oclMode(OpenCLBlackScholes::BS_HOST_ZERO_COPY)
+    ,modeString(std::string("oclzerocopy"))
 #endif
 #ifdef ENABLE_CPPAMP
     ,ampMode(AMPBlackScholes::AMP_BS_ARRAYVIEW)
+    ,modeString(std::string("amparrayview"))
 #endif
   {
 
@@ -357,17 +360,21 @@ public:
 #ifdef ENABLE_OPENCL
       else if (strcmp(argv[n],"-oclzerocopy")==0) {
         oclMode = OpenCLBlackScholes::BS_HOST_ZERO_COPY;
+        modeString = std::string("oclzerocopy");
       }
       else if (strcmp(argv[n],"-oclbuffer")==0) {
         oclMode = OpenCLBlackScholes::BS_BUFFER_COPY;
+        modeString = std::string("oclbuffer");
       }
 #endif
 #ifdef ENABLE_CPPAMP
       else if (strcmp(argv[n],"-amparrayview")==0) {
-        ampMode = AMPBlackScholes::AMP_BS_ARRAYVIEW;;
+        ampMode = AMPBlackScholes::AMP_BS_ARRAYVIEW;
+        modeString = std::string("amparrayview");
       }
       else if (strcmp(argv[n],"-amparray")==0) {
         ampMode = AMPBlackScholes::AMP_BS_ARRAY;
+        modeString = std::string("amparray");
       }
 #endif
 
@@ -381,6 +388,7 @@ public:
 
   unsigned int numInput;
   unsigned int iterations;
+  std::string modeString;
 
 #ifdef ENABLE_OPENCL
   OpenCLBlackScholes::OpenCLBSMode oclMode;
@@ -401,6 +409,10 @@ int main(int argc, char** argv) {
 
   AUTOTIMER(timer,__FUNCTION__);
   Arg arg(argc,argv);
+
+  std::stringstream ss;
+  ss << argv[0] << "_" << arg.modeString << "_n" << arg.numInput << "_i" << arg.iterations;
+  TimerStack::getDefaultTimerStack()->setLogPrefix(ss.str().c_str());
 
   float* inputPtr = new float[arg.numInput];
   genRandomInput(inputPtr, arg.numInput);

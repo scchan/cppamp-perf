@@ -69,23 +69,28 @@ class TimerEvent {
     }
 };
 
-
-
 TimerStack* Timer::defaultTimerStack=NULL;
 
 // Have a global TimerStack object to bootstrap itself
-TimerStack timerStack;
+TimerStack defaultTimerStack;
+TimerStack* TimerStack::getDefaultTimerStack() { return &defaultTimerStack; };
+
 TimerStack::TimerStack(){
   maxNestedLevel = 0;
   if (Timer::defaultTimerStack==NULL)
     Timer::defaultTimerStack = this;
+
+  std::stringstream ss;
+  ss << (int)GETPID();
+
+  prefix = ss.str(); 
   timer = new Timer(std::string("TimerStack"));
 }
 
 void TimerStack::dumpTimerStackGoogleTimeline() {
 
   std::stringstream filename;
-  filename << (int)GETPID() << ".html";
+  filename << prefix << ".html";
   std::ofstream file;
   file.open(filename.str().c_str(),std::ios::trunc);
 
@@ -135,17 +140,33 @@ void TimerStack::StopTimer(const std::string& name) {
 }
 
 void TimerStack::dumpTimerStack() {
+
+  std::stringstream filename;
+  filename << prefix << ".log";
+  std::ofstream file;
+  file.open(filename.str().c_str(),std::ios::trunc);
+
   while(!startQueue.empty()) {
     TimerEvent* e = startQueue.front();
     for (unsigned int i = 1; i < e->nestedLevel; i++) {
-      std::cout << "  ";
+      file << "  ";
     }
     if (e->nestedLevel!=0)
-      std::cout << "|_";
-    std::cout << e->name << ": " << e->getElapsedTime() << "ms" << std::endl;
+      file << "|_";
+    file << e->name << ": " << e->getElapsedTime() << "ms" << std::endl;
     startQueue.pop();
   }
+  file.close();
 }
+
+void TimerStack::setLogPrefix(const std::string& prefix) {
+  this->prefix = prefix;
+}
+
+void TimerStack::setLogPrefix(const char* prefix) {
+  this->prefix = std::string(prefix);
+}
+
 
 TimerStack::~TimerStack() {
   delete timer;
