@@ -30,7 +30,7 @@ static void genRandomInput(float* array, unsigned int n) {
 #ifdef ENABLE_CODEXL
   amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
 #endif
-  Timer timer(__FUNCTION__);
+  AUTOTIMER(timer,__FUNCTION__);
 
   for (unsigned int i = 0; i < n; i++) {
     array[i] = (float)rand() / (float)RAND_MAX;
@@ -95,7 +95,7 @@ void cpuBlackScholes(const float* input, float* call, float* put, unsigned int n
 #ifdef ENABLE_CODEXL
   amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
 #endif
-  Timer timer(__FUNCTION__);
+  AUTOTIMER(timer,__FUNCTION__);
   for (unsigned int i = 0; i < num; i++) {
     float c, p;
     calculateBlackScholes(input[i], &c, &p);
@@ -110,7 +110,7 @@ void verifyBlackScholes(const float* cpuCall, const float* cpuPut
 #ifdef ENABLE_CODEXL
   amdtScopedMarker marker((const char*)__FUNCTION__,"CPU");
 #endif
-  Timer timer(__FUNCTION__);
+  AUTOTIMER(timer,__FUNCTION__);
 
   // verify the results
   for (unsigned int i = 0; i < num; i++) {
@@ -150,7 +150,7 @@ public:
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
     try {
       context = Context(device);
       queue = CommandQueue(context, device);
@@ -180,7 +180,7 @@ public:
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
     Buffer inputBuffer, putBuffer, callBuffer;
     switch(mode) {
@@ -235,7 +235,7 @@ private:
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
     inputBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_READ_ONLY, num*sizeof(float), input);
     putBuffer = Buffer(context, CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY, num*sizeof(float), put);
@@ -248,7 +248,7 @@ private:
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
 
     std::vector<Event> mapEvents;
@@ -273,7 +273,7 @@ private:
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
     inputBuffer = Buffer(context, CL_MEM_READ_ONLY, num*sizeof(float));
     queue.enqueueWriteBuffer(inputBuffer,CL_FALSE,0,num*sizeof(float),input);
@@ -289,7 +289,7 @@ private:
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
     queue.enqueueReadBuffer(putBuffer, CL_FALSE, 0, num*sizeof(float), put);
     queue.enqueueReadBuffer(callBuffer, CL_FALSE, 0, num*sizeof(float), call);
@@ -302,7 +302,7 @@ private:
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker((const char*)__FUNCTION__,"");
 #endif
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
     //for (int i = 0; i < 10; i++)
     kernel.setArg(0, input);
@@ -327,7 +327,7 @@ public:
 
   
   void ampZeroCPUArray(float* a, unsigned int num) {
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
     array_view<float> v(extent<1>(num), a);
     parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
       v[id[0]] = 0.0f;
@@ -345,7 +345,7 @@ public:
                    , const unsigned int iterations
                    , float* flag, const unsigned int f) {
 
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
     array_view<float> inputView(extent<1>(num), inputPtr);
     array_view<float> callView(extent<1>(num), gpuCall);
@@ -353,7 +353,7 @@ public:
     array_view<float> flagView(extent<1>(1),flag);
 
     for (unsigned int i = 0; i < iterations; i++) {
-      Timer timer("kernel");
+      AUTOTIMER(timer,"kernel");
       parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
         float call, put;
         calculateBlackScholes(inputView[id[0]], &call, &put); 
@@ -366,11 +366,11 @@ public:
     }
 
     {
-      Timer timer("synchronize callView");
+      AUTOTIMER(timer,"synchronize callView");
       callView.synchronize();
     }
     {
-      Timer timer("synchronize putView");
+      AUTOTIMER(timer,"synchronize putView");
       putView.synchronize();
     }
   }
@@ -380,7 +380,7 @@ public:
                    , const unsigned int num
                    , const unsigned int iterations
                    , float* flag, const unsigned int f) {
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
 
     array<float,1> inputArray(extent<1>(num),inputPtr);
     array<float,1> callArray(num);
@@ -389,7 +389,7 @@ public:
     array_view<float> flagView(extent<1>(1),flag);
 
     for (unsigned int i = 0; i < iterations; i++) {
-      Timer timer("kernel");
+      AUTOTIMER(timer,"kernel");
       parallel_for_each(extent<1>(num), [&,flagView,f] (index<1> id) restrict(amp) {
         float call, put;
         calculateBlackScholes(inputArray[id[0]], &call, &put); 
@@ -402,7 +402,7 @@ public:
     }
 
     {
-      Timer timer("synchronize callArray, putArray");
+      AUTOTIMER(timer,"synchronize callArray, putArray");
       completion_future cf = copy_async(callArray, gpuCall);
       completion_future pf = copy_async(putArray, gpuPut);
       cf.wait();
@@ -416,7 +416,7 @@ public:
                    , const AMPBSMode mode
                    , const unsigned int iterations
                    , float* flag, const unsigned int f) {
-    Timer timer(__FUNCTION__);
+    AUTOTIMER(timer,__FUNCTION__);
     switch(mode) {
     case AMP_BS_ARRAY:
       runBlackScholesArray(inputPtr, gpuCall, gpuPut
@@ -526,7 +526,7 @@ int main(int argc, char** argv) {
   amdtScopedMarker marker((const char*)__FUNCTION__,"dummy");
 #endif
 
-  Timer timer(__FUNCTION__);
+  AUTOTIMER(timer,__FUNCTION__);
 
   Arg arg(argc,argv);
 
@@ -558,7 +558,7 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker("~OpenCLBlackScholes()",NULL);
 #endif
-    Timer timer("~OpenCLBlackScholes()");
+    AUTOTIMER(timer,"~OpenCLBlackScholes()");
 
     delete oclBlackScholes;
   }
@@ -589,7 +589,7 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_CODEXL
     amdtScopedMarker marker("~OpenCLBlackScholes()",NULL);
 #endif
-    Timer timer("~ampBlackScholes()");
+    AUTOTIMER(timer,"~ampBlackScholes()");
     delete ampBlackScholes;
   }
 #endif

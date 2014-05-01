@@ -2,8 +2,6 @@
 CC=gcc
 CXX=g++
 
-
-
 COMMON_FLAGS+=-I./include
 COMMON_FLAGS+=-O3
 

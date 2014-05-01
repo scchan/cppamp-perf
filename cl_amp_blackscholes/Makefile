@@ -6,8 +6,10 @@ LDFLAGS+=-L$(AMDAPPSDKROOT)/lib/x86_64 -lOpenCL
 
 
 
-UTIL_INCLUDE=-I../utilities/include
-UTIL_LIB=-L../utilities/bin -lStackTimer
+UTIL_INCLUDE=-I../utilities/include 
+UTIL_LIB=-L../utilities/bin
+UTIL_LIB+=-lStackTimer
+
 CPPFLAGS+=$(UTIL_INCLUDE)
 LDFLAGS+=$(UTIL_LIB)
 
