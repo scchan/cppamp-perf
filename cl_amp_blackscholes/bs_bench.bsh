@@ -1,0 +1,27 @@
+#!/bin/bash
+
+commands=( 
+           "./bs_opencl -oclzerocopy"
+           "./bs_opencl -oclbuffer"
+           "./bs_amp -amparrayview"
+           "./bs_amp -amparray"
+         )
+
+
+sizes=(
+       4194304
+       8388608
+       16777216
+       33554432
+       67108864
+     )
+
+for i in ${!commands[*]}
+do
+  for j in ${!sizes[*]}
+  do
+    c=""${commands[$i]}" -n ${sizes[$j]} -i 10"
+    printf " %s\n" "$c"
+    $c
+  done
+done
