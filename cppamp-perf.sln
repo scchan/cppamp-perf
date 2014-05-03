@@ -12,20 +12,24 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl_amp_blackscholes", "cl_a
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Debug|x64 = Debug|x64
+		CPPAMP_Debug|Win32 = CPPAMP_Debug|Win32
+		CPPAMP_Debug|x64 = CPPAMP_Debug|x64
+		CPPAMP_Release|Win32 = CPPAMP_Release|Win32
+		CPPAMP_Release|x64 = CPPAMP_Release|x64
 		OpenCL_Debug|Win32 = OpenCL_Debug|Win32
 		OpenCL_Debug|x64 = OpenCL_Debug|x64
 		OpenCL_Release|Win32 = OpenCL_Release|Win32
 		OpenCL_Release|x64 = OpenCL_Release|x64
-		Release|Win32 = Release|Win32
-		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Debug|Win32.Build.0 = Debug|Win32
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Debug|x64.ActiveCfg = Debug|x64
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Debug|x64.Build.0 = Debug|x64
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Debug|Win32.ActiveCfg = Debug|Win32
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Debug|Win32.Build.0 = Debug|Win32
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Debug|x64.ActiveCfg = CPPAMP_Debug|x64
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Debug|x64.Build.0 = CPPAMP_Debug|x64
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Release|Win32.ActiveCfg = OpenCL_Release|Win32
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Release|Win32.Build.0 = OpenCL_Release|Win32
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Release|x64.ActiveCfg = CPPAMP_Release|x64
+		{9E25F857-A329-402D-975C-51642F2DDBF0}.CPPAMP_Release|x64.Build.0 = CPPAMP_Release|x64
 		{9E25F857-A329-402D-975C-51642F2DDBF0}.OpenCL_Debug|Win32.ActiveCfg = OpenCL_Debug|Win32
 		{9E25F857-A329-402D-975C-51642F2DDBF0}.OpenCL_Debug|Win32.Build.0 = OpenCL_Debug|Win32
 		{9E25F857-A329-402D-975C-51642F2DDBF0}.OpenCL_Debug|x64.ActiveCfg = OpenCL_Debug|x64
@@ -34,14 +38,14 @@ Global
 		{9E25F857-A329-402D-975C-51642F2DDBF0}.OpenCL_Release|Win32.Build.0 = OpenCL_Release|Win32
 		{9E25F857-A329-402D-975C-51642F2DDBF0}.OpenCL_Release|x64.ActiveCfg = OpenCL_Release|x64
 		{9E25F857-A329-402D-975C-51642F2DDBF0}.OpenCL_Release|x64.Build.0 = OpenCL_Release|x64
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Release|Win32.ActiveCfg = Release|Win32
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Release|Win32.Build.0 = Release|Win32
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Release|x64.ActiveCfg = Release|x64
-		{9E25F857-A329-402D-975C-51642F2DDBF0}.Release|x64.Build.0 = Release|x64
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Debug|Win32.Build.0 = Debug|Win32
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Debug|x64.ActiveCfg = Debug|x64
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Debug|x64.Build.0 = Debug|x64
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Debug|Win32.ActiveCfg = Debug|Win32
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Debug|Win32.Build.0 = Debug|Win32
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Debug|x64.ActiveCfg = CPPAMP_Debug|x64
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Debug|x64.Build.0 = CPPAMP_Debug|x64
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Release|Win32.ActiveCfg = OpenCL_Release|Win32
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Release|Win32.Build.0 = OpenCL_Release|Win32
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Release|x64.ActiveCfg = CPPAMP_Release|x64
+		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.CPPAMP_Release|x64.Build.0 = CPPAMP_Release|x64
 		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.OpenCL_Debug|Win32.ActiveCfg = OpenCL_Debug|Win32
 		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.OpenCL_Debug|Win32.Build.0 = OpenCL_Debug|Win32
 		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.OpenCL_Debug|x64.ActiveCfg = OpenCL_Debug|x64
@@ -50,10 +54,6 @@ Global
 		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.OpenCL_Release|Win32.Build.0 = OpenCL_Release|Win32
 		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.OpenCL_Release|x64.ActiveCfg = OpenCL_Release|x64
 		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.OpenCL_Release|x64.Build.0 = OpenCL_Release|x64
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Release|Win32.ActiveCfg = Release|Win32
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Release|Win32.Build.0 = Release|Win32
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Release|x64.ActiveCfg = Release|x64
-		{CF9ECDF7-45B6-4D21-AC5E-057F8AEDD6E6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
