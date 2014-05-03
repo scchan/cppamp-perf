@@ -122,31 +122,43 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CPPAMP_Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>bs_amp</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Debug\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OpenCL_Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>bs_opencl</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Debug\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CPPAMP_Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>bs_amp</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Debug\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OpenCL_Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>bs_opencl</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Debug\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CPPAMP_Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>bs_amp</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Release\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OpenCL_Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>bs_opencl</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Release\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CPPAMP_Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>bs_amp</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Release\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OpenCL_Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>bs_opencl</TargetName>
+    <OutDir>$(SolutionDir)$(Platform)\Release\bin\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='CPPAMP_Debug|Win32'">
     <ClCompile>
