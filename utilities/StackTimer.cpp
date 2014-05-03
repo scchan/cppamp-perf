@@ -24,66 +24,62 @@
 
 #include "GoogleTimelineTemplate.h"
 
-class TimerEvent {
-  public:
-    TimerEvent(const std::string& name) {
-      this->name = name;
-      startTime = 0;
-      endTime = 0;
-      nestedLevel = 0;
-    }
-
-    void recordStartTime() {
-      startTime = getCurrentTime();
-    }
-
-    void recordEndTime() {
-      endTime = getCurrentTime();
-    }
-
-    long long getElapsedTime() {
-      return (endTime - startTime);
-    }
-
-    ~TimerEvent() {
-    }
-
-    std::string name;
-    long long startTime;
-    long long endTime;
-    unsigned int nestedLevel;
-
-  private:
-
-    long long getCurrentTime() {
-      long long t;
-#ifdef _WIN32
-      t = GetTickCount64();
-#else
-      struct timeval s;
-      gettimeofday(&s, 0);
-      t = (long long)s.tv_sec * (long long)1.0E3 +
-        (long long)s.tv_usec / (long long)1.0E3;
-#endif
-      return t;
-    }
-};
-
-TimerStack* Timer::defaultTimerStack=NULL;
-
 // Have a global TimerStack object to bootstrap itself
 TimerStack defaultTimerStack;
-TimerStack* TimerStack::getDefaultTimerStack() { return &defaultTimerStack; };
+TimerStack* TimerStack::getDefaultTimerStack() { return &defaultTimerStack; }
+
+class TimerEvent {
+public:
+  TimerEvent(const std::string& name) {
+    this->name = name;
+    startTime = 0;
+    endTime = 0;
+    nestedLevel = 0;
+  }
+
+  void recordStartTime() {
+    startTime = getCurrentTime();
+  }
+
+  void recordEndTime() {
+    endTime = getCurrentTime();
+  }
+
+  long long getElapsedTime() {
+    return (endTime - startTime);
+  }
+
+  ~TimerEvent() {
+  }
+  std::string name;
+  long long startTime;
+  long long endTime;
+  unsigned int nestedLevel;
+private:
+
+  long long getCurrentTime() {
+    long long t;
+#ifdef _WIN32
+    t = GetTickCount64();
+#else
+    struct timeval s;
+    gettimeofday(&s, 0);
+    t = (long long)s.tv_sec * (long long)1.0E3 +
+      (long long)s.tv_usec / (long long)1.0E3;
+#endif
+    return t;
+  }
+};
+
+
 
 TimerStack::TimerStack(){
   maxNestedLevel = 0;
-  if (Timer::defaultTimerStack==NULL)
-    Timer::defaultTimerStack = this;
-
+ 
   std::stringstream ss;
   ss << (int)GETPID();
 
-  prefix = ss.str(); 
+  prefix = ss.str();
   timer = new Timer(std::string("TimerStack"));
 }
 
@@ -92,24 +88,24 @@ void TimerStack::dumpTimerStackGoogleTimeline() {
   std::stringstream filename;
   filename << prefix << ".html";
   std::ofstream file;
-  file.open(filename.str().c_str(),std::ios::trunc);
+  file.open(filename.str().c_str(), std::ios::trunc);
 
   std::stringstream table;
 
 #define ADD_COLUMN(stream,type,id) (stream) << "dataTable.addColumn({ type: '" << (type) << "', id: '" << (id) << "'});" << std::endl;
 
-  ADD_COLUMN(table,std::string("string"),std::string("Nested Level"));
-  ADD_COLUMN(table,std::string("string"),std::string("Name"));
-  ADD_COLUMN(table,std::string("date"),std::string("Start"));
-  ADD_COLUMN(table,std::string("date"),std::string("End"));
+  ADD_COLUMN(table, std::string("string"), std::string("Nested Level"));
+  ADD_COLUMN(table, std::string("string"), std::string("Name"));
+  ADD_COLUMN(table, std::string("date"), std::string("Start"));
+  ADD_COLUMN(table, std::string("date"), std::string("End"));
 
   table << "dataTable.addRows([" << std::endl;
 #define ADD_ROW(stream,nestedLevel,name,start,end) (stream) << "[ '" << (nestedLevel) << "', '" << (name) \
-  << "', new Date(" << (start) << "), new Date(" << (end) << ")]" << "," << std::endl; 
+  << "', new Date(" << (start) << "), new Date(" << (end) << ")]" << "," << std::endl;
 
   for (unsigned int i = 0; i < startQueue.size(); i++) {
     TimerEvent* e = startQueue.front();
-    ADD_ROW(table,e->nestedLevel,e->name,e->startTime,e->endTime);
+    ADD_ROW(table, e->nestedLevel, e->name, e->startTime, e->endTime);
     startQueue.pop();
     startQueue.push(e);
   }
@@ -127,8 +123,8 @@ void TimerStack::dumpTimerStackGoogleTimeline() {
 void TimerStack::StartTimer(const std::string& name) {
   TimerEvent* e = new TimerEvent(name);
   e->recordStartTime();
-  e->nestedLevel = timerStack.size();
-  maxNestedLevel = (e->nestedLevel > maxNestedLevel)?e->nestedLevel:maxNestedLevel;
+  e->nestedLevel = (unsigned int)timerStack.size();
+  maxNestedLevel = (e->nestedLevel > maxNestedLevel) ? e->nestedLevel : maxNestedLevel;
   timerStack.push(e);
   startQueue.push(e);
 }
@@ -144,14 +140,14 @@ void TimerStack::dumpTimerStack() {
   std::stringstream filename;
   filename << prefix << ".log";
   std::ofstream file;
-  file.open(filename.str().c_str(),std::ios::trunc);
+  file.open(filename.str().c_str(), std::ios::trunc);
 
-  while(!startQueue.empty()) {
+  while (!startQueue.empty()) {
     TimerEvent* e = startQueue.front();
     for (unsigned int i = 1; i < e->nestedLevel; i++) {
       file << "  ";
     }
-    if (e->nestedLevel!=0)
+    if (e->nestedLevel != 0)
       file << "|_";
     file << e->name << ": " << e->getElapsedTime() << "ms" << std::endl;
     startQueue.pop();
@@ -174,7 +170,7 @@ TimerStack::~TimerStack() {
   dumpTimerStack();
 
   // delete all the timer events
-  while(!endQueue.empty()) {
+  while (!endQueue.empty()) {
     delete endQueue.front();
     endQueue.pop();
   }
@@ -182,13 +178,13 @@ TimerStack::~TimerStack() {
 
 
 Timer::Timer(const std::string& name, TimerStack* ts)
-  :tsp(ts),name(name) {
-    tsp->StartTimer(name);
+:tsp(ts), name(name) {
+  tsp->StartTimer(name);
 }
 
-Timer::Timer(const char* name, TimerStack* ts) 
-  :tsp(ts),name(std::string(name)) {
-    tsp->StartTimer(name);
+Timer::Timer(const char* name, TimerStack* ts)
+: tsp(ts), name(std::string(name)) {
+  tsp->StartTimer(name);
 }
 
 Timer::~Timer() {
@@ -204,7 +200,7 @@ struct stimer_struct {
 extern "C" {
 
   STimer timer_start(const char* name) {
-    STimer t = (STimer) malloc(sizeof(stimer_struct));
+    STimer t = (STimer)malloc(sizeof(stimer_struct));
     t->timer = new Timer(name);
     return t;
   }
@@ -215,7 +211,3 @@ extern "C" {
   }
 
 }
-
-
-
-

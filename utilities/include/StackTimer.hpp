@@ -6,6 +6,9 @@
 #include <queue>
 
 class TimerEvent;
+
+
+
 class Timer;
 class TimerStack {
 public:
@@ -34,13 +37,12 @@ private:
 
 class Timer {
 public:
-  static TimerStack* defaultTimerStack;
-  Timer(const std::string& name, TimerStack* ts=defaultTimerStack);
-  Timer(const char* name, TimerStack* ts=defaultTimerStack);
-  ~Timer(); 
-  private:
+  Timer(const std::string& name, TimerStack* ts = TimerStack::getDefaultTimerStack());
+  Timer(const char* name, TimerStack* ts = TimerStack::getDefaultTimerStack());
+  ~Timer();
+private:
   std::string name;
-    TimerStack* tsp;
+  TimerStack* tsp;
 };
 
 #ifndef DISABLE_AUTOTIMER
