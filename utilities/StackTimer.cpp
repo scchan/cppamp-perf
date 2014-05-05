@@ -135,12 +135,49 @@ void TimerStack::StopTimer(const std::string& name) {
   endQueue.push(e);
 }
 
+
+class EventAverage {
+public:
+  EventAverage(std::string name):name(name),num(0),total(0){}
+  EventAverage(std::string name, long long value):name(name),num(1),total(value){}
+  void add(long long v) {
+    total+=v;
+    num++;
+  }
+  double getAverage() {
+    if (num==0) 
+      return 0.0;
+    else
+      return (double)total/(double)num;
+  }
+  std::string name;
+  unsigned int num;
+  long long total;
+};
+
+class EventAverageManager {
+public:
+  void addEvent(std::string name, long long value) {
+    for (std::vector<EventAverage>::iterator iter = data.begin();
+        iter != data.end(); iter++) {
+      if (iter->name==name) {
+        iter->add(value);
+        return;
+      }
+    }
+    data.push_back(EventAverage(name,value));
+  }
+  std::vector<EventAverage> data;
+};
+
 void TimerStack::dumpTimerStack() {
 
   std::stringstream filename;
   filename << prefix << ".log";
   std::ofstream file;
   file.open(filename.str().c_str(), std::ios::trunc);
+
+  EventAverageManager avg;
 
   while (!startQueue.empty()) {
     TimerEvent* e = startQueue.front();
@@ -150,7 +187,17 @@ void TimerStack::dumpTimerStack() {
     if (e->nestedLevel != 0)
       file << "|_";
     file << e->name << ": " << e->getElapsedTime() << "ms" << std::endl;
+
+    avg.addEvent(e->name, e->getElapsedTime());
     startQueue.pop();
+  }
+
+  // print the averages
+  file << std::endl;
+  file << "Event averages:" << std::endl;
+  for (std::vector<EventAverage>::iterator iter = avg.data.begin();
+    iter != avg.data.end(); iter++) {
+    file << "\t" << iter->name << ": " << iter->getAverage() << "ms" << std::endl;
   }
   file.close();
 }
