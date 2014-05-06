@@ -269,8 +269,8 @@ public:
       putView[id[0]] = put;
     });
 
-    completion_future cf = callView.synchronize_async();;
-    completion_future pf = putView.synchronize_async();;
+    completion_future cf = callView.synchronize_async();
+    completion_future pf = putView.synchronize_async();
     cf.wait();
     pf.wait();
   }
