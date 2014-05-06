@@ -111,6 +111,13 @@ struct unique_number {
   float operator()() {  return current++; };
 };
 
+struct output_ref {
+  int current;
+  float rand;
+  output_ref(float r=0.0f) { current=0; rand = r; };
+  bool operator()(float f) { bool b = fabs((current+rand)-f) > 0.001f; current++; return b;} 
+};
+
 int main(int argc, char* argv[]) {
   unsigned int memSizeMB = 64*(1024*1024);
   unsigned int numElements = memSizeMB/sizeof(float);
@@ -118,9 +125,8 @@ int main(int argc, char* argv[]) {
 
   srand(time(NULL));
 
-  struct unique_number generator;
   std::vector<float> v(numElements);
-  std::generate(v.begin(), v.end(), generator);
+  std::generate(v.begin(), v.end(), unique_number());
   v[v.size()-1] = 0.0f;
 
   // run the host to device tests
@@ -144,6 +150,33 @@ int main(int argc, char* argv[]) {
       printf("Pass %d %s\n",i,(const char*)((r==v.size()-1)?"passed":"failed"));
     }
   }
+
+
+  // run the device to host tests
+  printf("run device to host tests\n");
+  void (*deviceToHostTest)(std::vector<float>&,const float);
+  for (unsigned int t = MEMTEST_DEVICE_TO_HOST_TEST+1; 
+        t != MEMTEST_LAST; t++) {
+
+    switch(t) {
+      case ARRAYVIEW_DEVICE_TO_HOST:
+        deviceToHostTest = arrayViewDeviceToHostBandwidth;
+      break;
+      case ARRAY_DEVICE_TO_HOST:
+        deviceToHostTest = arrayDeviceToHostBandwidth;
+      break;
+      default:
+      break;
+    };
+
+    for (unsigned int i = 0; i < numIter; i++) {
+      float r = rand();
+      deviceToHostTest(v,r);
+      int c = std::count_if(v.begin(), v.end(), output_ref(r));
+      printf("Pass %d %s\n",i,(const char*)((c==0)?"passed":"failed"));
+    }
+  }
+ 
 
 
   return 0;
