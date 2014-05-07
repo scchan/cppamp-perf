@@ -4,7 +4,9 @@
 #include <ctime>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 
@@ -166,10 +168,29 @@ enum {
 
   ,MEMTEST_LAST
 } MemTests;
+const char* MemTestNames[] {
+  ""
+  ,"ArrayView (Host to Device)"
+  ,"Array (Host to Device)"
+  ,""
+  ,"ArrayView (Device to Host)"
+  ,"Array (Device to Host)"
+  ,""
+};
+
 
   Arg parser(argc,argv);
   unsigned int numElements = (parser.memSizeMB*(1024*1024))/sizeof(float);
   unsigned int numIter = parser.iterations;
+
+  std::stringstream output;
+  std::string separator(":");
+  output << "Transfer Type";
+  output << separator << "Transfer Size (MB)";
+  output << separator << "Average Time (ms)";
+  output << separator << "Bandwidth (GB/s)";
+  output << std::endl;
+
   srand(time(NULL));
 
   std::vector<float> v(numElements);
@@ -196,10 +217,24 @@ enum {
       break;
     };
 
+    TimerEventQueue tq;
+    int error = 0;
     for (unsigned int i = 0; i < numIter; i++) {
-      int r = hostToDeviceTest(v);
-      printf("Pass %d %s\n",i,(const char*)((r==v.size()-1)?"passed":"failed"));
+      int result;
+      {
+        SimpleTimer timer(tq);
+        result = hostToDeviceTest(v);
+      }
+      if (result!=v.size()-1)
+        error++;
     }
+    double bandwidth = (parser.memSizeMB/1024.0)/(tq.getAverageTime()/1000.0f);
+
+    output << MemTestNames[t];
+    output << separator << parser.memSizeMB;
+    output << separator << tq.getAverageTime();
+    output << separator << bandwidth;
+    output << std::endl;
   }
 
 
@@ -232,7 +267,12 @@ enum {
     }
   }
  
-
+  std::stringstream filename;
+  filename << argv[0] << "_m_" << parser.memSizeMB << "_i_" << parser.iterations << ".log";
+  std::ofstream file;
+  file.open(filename.str().c_str(), std::ios::trunc);
+  file << output.str();
+  file.close();
 
   return 0;
 }

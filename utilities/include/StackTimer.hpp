@@ -6,10 +6,10 @@
 #include <queue>
 
 class TimerEvent;
-
-
-
 class Timer;
+
+
+
 class TimerStack {
 public:
 
@@ -23,7 +23,7 @@ public:
 
   static TimerStack* getDefaultTimerStack();
 
-private:
+protected:
   std::stack<TimerEvent*> timerStack;
   unsigned int maxNestedLevel;
 
@@ -43,6 +43,29 @@ public:
 private:
   std::string name;
   TimerStack* tsp;
+};
+
+
+class TimerEventQueueImpl;
+class TimerEventQueue {
+public:
+  TimerEventQueue();
+  ~TimerEventQueue();
+  TimerEvent* getNewTimer(const char* name="");
+  double getAverageTime();
+  unsigned long getNumEvents();
+  void clear();
+private:
+  TimerEventQueueImpl* impl;
+};
+
+
+class SimpleTimer {
+public:
+  SimpleTimer(TimerEventQueue& q, const char* name="");
+  ~SimpleTimer();
+private:
+  TimerEvent* e;
 };
 
 #ifndef DISABLE_AUTOTIMER

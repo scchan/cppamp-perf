@@ -240,6 +240,62 @@ Timer::~Timer() {
 
 
 
+
+
+
+class TimerEventQueueImpl {
+public:
+  TimerEvent* getNewTimer(const char* name) {
+    timers.push_back(TimerEvent(std::string(name)));
+    return &timers[timers.size()-1];
+  }
+  void clear()                 { timers.clear(); }
+  unsigned long getNumEvents() { return timers.size(); }
+  long long getTotalTime() {
+    long long total = 0;
+    for (std::vector<TimerEvent>::iterator it = timers.begin();
+      it != timers.end(); it++) {
+      total+=it->getElapsedTime();
+    }
+    return total;
+  }
+  double getAverageTime() {
+    if (timers.size() == 0) 
+      return 0.0;
+    else
+      return (getTotalTime()/(double)timers.size());
+  }
+protected:
+  std::vector<TimerEvent> timers;
+};
+
+
+TimerEventQueue::TimerEventQueue() {
+  impl = new TimerEventQueueImpl();
+}
+
+TimerEventQueue::~TimerEventQueue() {
+  if (impl)
+    delete impl;
+}
+
+TimerEvent* TimerEventQueue::getNewTimer(const char* name) {
+  return impl->getNewTimer(name);
+}
+
+void TimerEventQueue::clear()                 { impl->clear(); }
+unsigned long TimerEventQueue::getNumEvents() { impl->getNumEvents(); }
+double TimerEventQueue::getAverageTime()   { impl->getAverageTime(); }
+
+SimpleTimer::SimpleTimer(TimerEventQueue& q, const char* name)  {
+  e = q.getNewTimer(name);
+  e->recordStartTime();
+}
+SimpleTimer::~SimpleTimer() {
+  e->recordEndTime();
+}
+
+
 struct stimer_struct {
   Timer* timer;
 };
