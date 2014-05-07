@@ -168,7 +168,7 @@ enum {
 } MemTests;
 
   Arg parser(argc,argv);
-  unsigned int numElements = parser.memSizeMB/sizeof(float);
+  unsigned int numElements = (parser.memSizeMB*(1024*1024))/sizeof(float);
   unsigned int numIter = parser.iterations;
   srand(time(NULL));
 
