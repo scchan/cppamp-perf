@@ -15,6 +15,7 @@
 #endif
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -23,6 +24,9 @@
 #include "StackTimer.h"
 
 #include "GoogleTimelineTemplate.h"
+
+#define PRINT_POINTER(p) printf("%s:%d %s=%p\n",__PRETTY_FUNCTION__,__LINE__,#p,p);
+
 
 // Have a global TimerStack object to bootstrap itself
 TimerStack defaultTimerStack;
@@ -36,6 +40,9 @@ public:
     endTime = 0;
     nestedLevel = 0;
   }
+
+  TimerEvent(const TimerEvent& e):name(e.name),startTime(e.startTime)
+                                  ,endTime(e.endTime),nestedLevel(e.nestedLevel){}
 
   void recordStartTime() {
     startTime = getCurrentTime();
@@ -71,19 +78,37 @@ private:
   }
 };
 
+class TimerStackImpl {
+public:
+
+  TimerStackImpl() {
+    maxNestedLevel = 0;
+    std::stringstream ss;
+    ss << (int)GETPID();
+    prefix = ss.str();
+  }
+
+  void StartTimer(const char* name);
+  void StopTimer(const char* name);
+  void dumpTimerStack();
+  void setLogPrefix(const std::string& prefix);
+  void setLogPrefix(const char* prefix);
+  ~TimerStackImpl();
+
+protected:
+  std::stack<TimerEvent*> timerStack;
+  unsigned int maxNestedLevel;
+
+  std::queue<TimerEvent*> startQueue;
+  std::queue<TimerEvent*> endQueue;
+  std::string prefix;
+
+  void dumpTimerStackGoogleTimeline();
+};
 
 
-TimerStack::TimerStack(){
-  maxNestedLevel = 0;
- 
-  std::stringstream ss;
-  ss << (int)GETPID();
 
-  prefix = ss.str();
-  timer = new Timer(std::string("TimerStack"));
-}
-
-void TimerStack::dumpTimerStackGoogleTimeline() {
+void TimerStackImpl::dumpTimerStackGoogleTimeline() {
 
   std::stringstream filename;
   filename << prefix << ".html";
@@ -120,20 +145,21 @@ void TimerStack::dumpTimerStackGoogleTimeline() {
   file.close();
 }
 
-void TimerStack::StartTimer(const std::string& name) {
-  TimerEvent* e = new TimerEvent(name);
-  e->recordStartTime();
+void TimerStackImpl::StartTimer(const char* name) {
+  TimerEvent* e = new TimerEvent(std::string(name));
   e->nestedLevel = (unsigned int)timerStack.size();
   maxNestedLevel = (e->nestedLevel > maxNestedLevel) ? e->nestedLevel : maxNestedLevel;
   timerStack.push(e);
   startQueue.push(e);
+  e->recordStartTime();
 }
-void TimerStack::StopTimer(const std::string& name) {
+void TimerStackImpl::StopTimer(const char* name) {
   TimerEvent* e = timerStack.top();
   e->recordEndTime();
   timerStack.pop();
   endQueue.push(e);
 }
+
 
 
 class EventAverage {
@@ -170,7 +196,7 @@ public:
   std::vector<EventAverage> data;
 };
 
-void TimerStack::dumpTimerStack() {
+void TimerStackImpl::dumpTimerStack() {
 
   std::stringstream filename;
   filename << prefix << ".log";
@@ -202,20 +228,14 @@ void TimerStack::dumpTimerStack() {
   file.close();
 }
 
-void TimerStack::setLogPrefix(const std::string& prefix) {
-  this->prefix = prefix;
-}
-
-void TimerStack::setLogPrefix(const char* prefix) {
+void TimerStackImpl::setLogPrefix(const char* prefix) {
   this->prefix = std::string(prefix);
 }
 
 
-TimerStack::~TimerStack() {
-  delete timer;
+TimerStackImpl::~TimerStackImpl() {
   dumpTimerStackGoogleTimeline();
   dumpTimerStack();
-
   // delete all the timer events
   while (!endQueue.empty()) {
     delete endQueue.front();
@@ -224,20 +244,38 @@ TimerStack::~TimerStack() {
 }
 
 
-Timer::Timer(const std::string& name, TimerStack* ts)
-:tsp(ts), name(name) {
-  tsp->StartTimer(name);
+
+TimerStack::TimerStack() {
+  impl = new TimerStackImpl();
+  timer = new Timer("TimerStack",this);
+}
+TimerStack::~TimerStack() {
+  delete timer;
+  delete impl;
+}
+void TimerStack::StartTimer(const char* name) {
+  impl->StartTimer(name);
+}
+void TimerStack::StopTimer(const char* name) {
+  impl->StopTimer(name);
+}
+void TimerStack::dumpTimerStack() {
+  impl->dumpTimerStack();
+}
+void TimerStack::setLogPrefix(const char* prefix) {
+  impl->setLogPrefix(prefix);
 }
 
-Timer::Timer(const char* name, TimerStack* ts)
-: tsp(ts), name(std::string(name)) {
-  tsp->StartTimer(name);
+
+Timer::Timer(const char* name, TimerStack* ts):tsp(ts) {
+  this->name = strdup(name);
+  tsp->StartTimer(this->name);
 }
 
 Timer::~Timer() {
   tsp->StopTimer(name);
+  free(this->name);
 }
-
 
 
 
@@ -245,9 +283,15 @@ Timer::~Timer() {
 
 class TimerEventQueueImpl {
 public:
-  TimerEvent* getNewTimer(const char* name) {
+  unsigned int getNewTimer(const char* name) {
     timers.push_back(TimerEvent(std::string(name)));
-    return &(timers.back());
+    return timers.size()-1;
+  }
+  TimerEvent* getTimer(const unsigned int index) {
+    if (index < timers.size())
+      return &timers[index];
+    else
+      return NULL;
   }
   void clear()                 { timers.clear(); }
   unsigned int getNumEvents() { return (unsigned int)timers.size(); }
@@ -279,22 +323,27 @@ TimerEventQueue::~TimerEventQueue() {
     delete impl;
 }
 
-TimerEvent* TimerEventQueue::getNewTimer(const char* name) {
+unsigned int TimerEventQueue::getNewTimer(const char* name) {
   return impl->getNewTimer(name);
 }
 
+TimerEvent* TimerEventQueue::getTimerEvent(const unsigned int index) {
+  return impl->getTimer(index);
+}
+
 void TimerEventQueue::clear()                 { impl->clear(); }
-unsigned int TimerEventQueue::getNumEvents() { impl->getNumEvents(); }
-double TimerEventQueue::getAverageTime()   { impl->getAverageTime(); }
+unsigned long TimerEventQueue::getNumEvents() { return impl->getNumEvents(); }
+double TimerEventQueue::getAverageTime()   { return impl->getAverageTime(); }
+
 
 SimpleTimer::SimpleTimer(TimerEventQueue& q, const char* name)  {
-  e = q.getNewTimer(name);
-  e->recordStartTime();
+  this->q = &q;
+  index = q.getNewTimer(name);
+  q.getTimerEvent(index)->recordStartTime();
 }
 SimpleTimer::~SimpleTimer() {
-  e->recordEndTime();
+  q->getTimerEvent(index)->recordEndTime();
 }
-
 
 struct stimer_struct {
   Timer* timer;
