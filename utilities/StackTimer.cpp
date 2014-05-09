@@ -332,7 +332,7 @@ TimerEvent* TimerEventQueue::getTimerEvent(const unsigned int index) {
 }
 
 void TimerEventQueue::clear()                 { impl->clear(); }
-unsigned long TimerEventQueue::getNumEvents() { return impl->getNumEvents(); }
+unsigned int TimerEventQueue::getNumEvents() { return impl->getNumEvents(); }
 double TimerEventQueue::getAverageTime()   { return impl->getAverageTime(); }
 
 
