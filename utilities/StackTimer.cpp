@@ -24,6 +24,8 @@
 
 #include "GoogleTimelineTemplate.h"
 
+
+
 // Have a global TimerStack object to bootstrap itself
 TimerStack defaultTimerStack;
 TimerStack* TimerStack::getDefaultTimerStack() { return &defaultTimerStack; }
@@ -37,15 +39,30 @@ public:
     nestedLevel = 0;
   }
 
+  TimerEvent(const TimerEvent& e):name(e.name),startTime(e.startTime)
+                                  ,endTime(e.endTime),nestedLevel(e.nestedLevel){}
+
   void recordStartTime() {
     startTime = getCurrentTime();
+#ifdef DEBUG
+    std::cout << "startTime: " << startTime << std::endl;
+#endif
   }
 
   void recordEndTime() {
     endTime = getCurrentTime();
+#ifdef DEBUG
+    std::cout << "endTime: " << endTime << std::endl;
+#endif
+
   }
 
   long long getElapsedTime() {
+#ifdef DEBUG
+    std::cout << "startTime: " << startTime;
+    std::cout << "\t endTime: " << endTime;
+    std::cout << "\t elapsedTime: " << (endTime - startTime) << std::endl;
+#endif
     return (endTime - startTime);
   }
 
@@ -245,9 +262,15 @@ Timer::~Timer() {
 
 class TimerEventQueueImpl {
 public:
-  TimerEvent* getNewTimer(const char* name) {
+  unsigned int getNewTimer(const char* name) {
     timers.push_back(TimerEvent(std::string(name)));
-    return &timers[timers.size()-1];
+    return timers.size()-1;
+  }
+  TimerEvent* getTimer(const unsigned int index) {
+    if (index < timers.size())
+      return &timers[index];
+    else
+      return NULL;
   }
   void clear()                 { timers.clear(); }
   unsigned long getNumEvents() { return timers.size(); }
@@ -279,22 +302,27 @@ TimerEventQueue::~TimerEventQueue() {
     delete impl;
 }
 
-TimerEvent* TimerEventQueue::getNewTimer(const char* name) {
+unsigned int TimerEventQueue::getNewTimer(const char* name) {
   return impl->getNewTimer(name);
+}
+
+TimerEvent* TimerEventQueue::getTimerEvent(const unsigned int index) {
+  return impl->getTimer(index);
 }
 
 void TimerEventQueue::clear()                 { impl->clear(); }
 unsigned long TimerEventQueue::getNumEvents() { impl->getNumEvents(); }
 double TimerEventQueue::getAverageTime()   { impl->getAverageTime(); }
 
+
 SimpleTimer::SimpleTimer(TimerEventQueue& q, const char* name)  {
-  e = q.getNewTimer(name);
-  e->recordStartTime();
+  this->q = &q;
+  index = q.getNewTimer(name);
+  q.getTimerEvent(index)->recordStartTime();
 }
 SimpleTimer::~SimpleTimer() {
-  e->recordEndTime();
+  q->getTimerEvent(index)->recordEndTime();
 }
-
 
 struct stimer_struct {
   Timer* timer;

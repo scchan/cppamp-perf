@@ -51,7 +51,8 @@ class TimerEventQueue {
 public:
   TimerEventQueue();
   ~TimerEventQueue();
-  TimerEvent* getNewTimer(const char* name="");
+  unsigned int getNewTimer(const char* name="");
+  TimerEvent* getTimerEvent(unsigned int index);
   double getAverageTime();
   unsigned long getNumEvents();
   void clear();
@@ -65,7 +66,8 @@ public:
   SimpleTimer(TimerEventQueue& q, const char* name="");
   ~SimpleTimer();
 private:
-  TimerEvent* e;
+  TimerEventQueue* q;
+  unsigned int index;
 };
 
 #ifndef DISABLE_AUTOTIMER
