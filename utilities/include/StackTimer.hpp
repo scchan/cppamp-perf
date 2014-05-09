@@ -9,39 +9,29 @@ class TimerEvent;
 class Timer;
 
 
-
+class TimerStackImpl;
 class TimerStack {
 public:
-
   TimerStack();
-  void StartTimer(const std::string& name);
-  void StopTimer(const std::string& name);
-  void dumpTimerStack();
-  void setLogPrefix(const std::string& prefix);
-  void setLogPrefix(const char* prefix);
   ~TimerStack();
 
+  void StartTimer(const char* name);
+  void StopTimer(const char* name);
+  
+  void dumpTimerStack();
+  void setLogPrefix(const char* prefix);
   static TimerStack* getDefaultTimerStack();
-
 protected:
-  std::stack<TimerEvent*> timerStack;
-  unsigned int maxNestedLevel;
-
-  std::queue<TimerEvent*> startQueue;
-  std::queue<TimerEvent*> endQueue;
+  TimerStackImpl* impl;
   Timer* timer;
-  std::string prefix;
-
-  void dumpTimerStackGoogleTimeline();
 };
 
 class Timer {
 public:
-  Timer(const std::string& name, TimerStack* ts = TimerStack::getDefaultTimerStack());
   Timer(const char* name, TimerStack* ts = TimerStack::getDefaultTimerStack());
   ~Timer();
 private:
-  std::string name;
+  char* name;
   TimerStack* tsp;
 };
 
