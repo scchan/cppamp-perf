@@ -247,10 +247,10 @@ class TimerEventQueueImpl {
 public:
   TimerEvent* getNewTimer(const char* name) {
     timers.push_back(TimerEvent(std::string(name)));
-    return &timers[timers.size()-1];
+    return &(timers.back());
   }
   void clear()                 { timers.clear(); }
-  unsigned long getNumEvents() { return timers.size(); }
+  unsigned int getNumEvents() { return (unsigned int)timers.size(); }
   long long getTotalTime() {
     long long total = 0;
     for (std::vector<TimerEvent>::iterator it = timers.begin();
@@ -284,7 +284,7 @@ TimerEvent* TimerEventQueue::getNewTimer(const char* name) {
 }
 
 void TimerEventQueue::clear()                 { impl->clear(); }
-unsigned long TimerEventQueue::getNumEvents() { impl->getNumEvents(); }
+unsigned int TimerEventQueue::getNumEvents() { impl->getNumEvents(); }
 double TimerEventQueue::getAverageTime()   { impl->getAverageTime(); }
 
 SimpleTimer::SimpleTimer(TimerEventQueue& q, const char* name)  {

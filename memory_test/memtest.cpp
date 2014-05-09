@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include "StackTimer.hpp"
 
 
 
@@ -24,7 +25,6 @@ using namespace concurrency;
   #define LOGF(x)   fast_math::logf(x)
   #define SQRTF(x)  fast_math::sqrtf(x)
 
-
 #else
 
 #include <cmath>
@@ -34,10 +34,12 @@ using namespace concurrency;
   #define FABSF(x)  fabs(x)
   #define LOGF(x)   log(x)
   #define SQRTF(x)  sqrt(x)
-#endif
+
+#endif  // #ifdef ENABLE_CPPAMP
 
 
-#include "StackTimer.hpp"
+
+
 
 
 #ifdef ENABLE_CPPAMP
@@ -88,6 +90,91 @@ int arrayHostToDeviceBandwidth(std::vector<float>& v) {
   copy(b,&i);
   return i;
 }
+
+#endif // #ifdef ENABLE_CPPAMP
+
+#ifdef ENABLE_OPENCL
+
+
+#include <CL/cl.h>
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+using namespace cl;
+
+#include "openclkernelhelper.h"
+
+const char* kernelString = STRINGIFY(
+
+  __kernel void deviceToHost(__global float* v, const float r) {
+    v[get_global_id(0)]=r+(float)get_global_id(0);
+  }
+
+  __kernel void hostToDevice(__global float* v, __global int* i) {
+    if (fabs(v[get_global_id(0)] - (float)get_global_id(0)) > 0.0001) {
+      i[0] = get_global_id(0);
+    }
+  }
+
+);
+
+
+class OpenCLSetup {
+
+public:
+  OpenCLSetup() {
+
+    try {
+      device = Device::getDefault();
+      context = Context(device);
+      queue = CommandQueue(context, device);
+      program = Program(context, std::string(kernelString));
+      program.build();
+      deviceToHostKernel = Kernel(program,"deviceToHost");
+      hostToDeviceKernel = Kernel(program,"hostToDevice");
+    } catch (cl::Error error) {
+      std::cerr << "Error: " << error.what() << "(" << error.err() << ")" << std::endl;
+    } catch (...) {
+      std::cerr << "Error: unknown exception." << std::endl;
+    }
+  }
+
+  Device device;
+  Context context;
+  Program program;
+  CommandQueue queue;
+  Kernel deviceToHostKernel;
+  Kernel hostToDeviceKernel;
+};
+OpenCLSetup oclSetup;
+
+void oclZeroCopyDeviceToHostBandwidth(std::vector<float>& v, const float r) {
+  Buffer buffer(oclSetup.context,CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY
+                , v.size()*sizeof(float), &v[0]);
+  oclSetup.deviceToHostKernel.setArg(0, buffer);
+  oclSetup.deviceToHostKernel.setArg(1, r);
+  oclSetup.queue.enqueueNDRangeKernel(oclSetup.deviceToHostKernel
+                                    , NullRange, NDRange(v.size()));
+  oclSetup.queue.finish();
+}
+
+void oclDeviceMemoryDeviceToHostBandwidth(std::vector<float>& v, const float r) {
+  Buffer buffer(oclSetup.context, CL_MEM_WRITE_ONLY
+                , v.size()*sizeof(float));
+  oclSetup.deviceToHostKernel.setArg(0, buffer);
+  oclSetup.deviceToHostKernel.setArg(1, r);
+  oclSetup.queue.enqueueNDRangeKernel(oclSetup.deviceToHostKernel
+                                    , NullRange, NDRange(v.size()));
+  oclSetup.queue.enqueueReadBuffer(buffer, CL_FALSE, 0
+                                  , v.size()*sizeof(float), &v[0]);
+  oclSetup.queue.finish();
+}
+
+int oclZeroCopyHostToDeviceBandwidth(std::vector<float>& v) {
+}
+
+int oclDeviceMemoryHostToDeviceBandwidth(std::vector<float>& v) {
+}
+
 
 #endif
 
@@ -160,11 +247,19 @@ enum {
   ,ARRAYVIEW_HOST_TO_DEVICE
   ,ARRAY_HOST_TO_DEVICE
 
+
+  ,OCL_ZEROCOPY_HOST_TO_DEVICE
+  ,OCL_DEVICE_MEM_HOST_TO_DEVICE
+
   ,MEMTEST_DEVICE_TO_HOST_TEST
+ 
 
   /* Device to Host bandwidth tests*/
   ,ARRAYVIEW_DEVICE_TO_HOST
   ,ARRAY_DEVICE_TO_HOST
+
+  ,OCL_ZEROCOPY_DEVICE_TO_HOST
+  ,OCL_DEVICE_MEM_DEVICE_TO_HOST
 
   ,MEMTEST_LAST
 } MemTests;
@@ -172,9 +267,13 @@ const char* MemTestNames[] {
   ""
   ,"ArrayView (Host to Device)"
   ,"Array (Host to Device)"
+  ,"OpenCL zero-copy (Host to Device)"
+  ,"OpenCL device memory (Host to Device)"
   ,""
   ,"ArrayView (Device to Host)"
   ,"Array (Device to Host)"
+  ,"OpenCL zero-copy (Device to Host)"
+  ,"OpenCL device memory (Device to Host)"
   ,""
 };
 
@@ -213,7 +312,17 @@ const char* MemTestNames[] {
       break;
 #endif
 
+#ifdef ENABLE_OPENCL
+      case OCL_ZEROCOPY_HOST_TO_DEVICE:
+        hostToDeviceTest = oclZeroCopyHostToDeviceBandwidth;
+      break;
+      case OCL_DEVICE_MEM_HOST_TO_DEVICE:
+        hostToDeviceTest = oclDeviceMemoryHostToDeviceBandwidth;
+      break;
+#endif
+
       default:
+      continue;
       break;
     };
 
@@ -228,13 +337,15 @@ const char* MemTestNames[] {
       if (result!=v.size()-1)
         error++;
     }
-    double bandwidth = (parser.memSizeMB/1024.0)/(tq.getAverageTime()/1000.0f);
 
-    output << MemTestNames[t];
-    output << separator << parser.memSizeMB;
-    output << separator << tq.getAverageTime();
-    output << separator << bandwidth;
-    output << std::endl;
+    if (tq.getNumEvents()>0) {
+      double bandwidth = (parser.memSizeMB/1024.0)/(tq.getAverageTime()/1000.0f);
+      output << MemTestNames[t];
+      output << separator << parser.memSizeMB;
+      output << separator << tq.getAverageTime();
+      output << separator << bandwidth;
+      output << std::endl;
+    }
   }
 
 
@@ -254,16 +365,37 @@ const char* MemTestNames[] {
         deviceToHostTest = arrayDeviceToHostBandwidth;
       break;
 #endif
-      
+#ifdef  ENABLE_OPENCL
+      case OCL_ZEROCOPY_DEVICE_TO_HOST:
+        deviceToHostTest = oclZeroCopyDeviceToHostBandwidth;
+      break;
+      case OCL_DEVICE_MEM_DEVICE_TO_HOST:
+        deviceToHostTest = oclDeviceMemoryDeviceToHostBandwidth;
+      break;
+#endif
+    
       default:
+      continue;
       break;
     };
 
+    TimerEventQueue tq;
     for (unsigned int i = 0; i < numIter; i++) {
       float r = rand();
-      deviceToHostTest(v,r);
+      {
+        SimpleTimer timer(tq);
+        deviceToHostTest(v,r);
+      }
       int c = std::count_if(v.begin(), v.end(), output_ref(r));
-      printf("Pass %d %s\n",i,(const char*)((c==0)?"passed":"failed"));
+    }
+
+    if (tq.getNumEvents() > 0) {
+      double bandwidth = (parser.memSizeMB/1024.0)/(tq.getAverageTime()/1000.0f);
+      output << MemTestNames[t];
+      output << separator << parser.memSizeMB;
+      output << separator << tq.getAverageTime();
+      output << separator << bandwidth;
+      output << std::endl;
     }
   }
  

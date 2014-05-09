@@ -53,7 +53,7 @@ public:
   ~TimerEventQueue();
   TimerEvent* getNewTimer(const char* name="");
   double getAverageTime();
-  unsigned long getNumEvents();
+  unsigned int getNumEvents();
   void clear();
 private:
   TimerEventQueueImpl* impl;
