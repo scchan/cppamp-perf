@@ -154,7 +154,11 @@ void oclZeroCopyDeviceToHostBandwidth(std::vector<float>& v, const float r) {
   oclSetup.deviceToHostKernel.setArg(1, r);
   oclSetup.queue.enqueueNDRangeKernel(oclSetup.deviceToHostKernel
                                     , NullRange, NDRange(v.size()));
-  oclSetup.queue.finish();
+
+  oclSetup.queue.enqueueMapBuffer(buffer, CL_TRUE
+                                 , CL_MAP_READ
+                                 , 0, v.size()*sizeof(float)
+                                 , NULL, NULL, NULL);
 }
 
 void oclDeviceMemoryDeviceToHostBandwidth(std::vector<float>& v, const float r) {
@@ -164,15 +168,51 @@ void oclDeviceMemoryDeviceToHostBandwidth(std::vector<float>& v, const float r) 
   oclSetup.deviceToHostKernel.setArg(1, r);
   oclSetup.queue.enqueueNDRangeKernel(oclSetup.deviceToHostKernel
                                     , NullRange, NDRange(v.size()));
-  oclSetup.queue.enqueueReadBuffer(buffer, CL_FALSE, 0
+  oclSetup.queue.enqueueReadBuffer(buffer, CL_TRUE, 0
                                   , v.size()*sizeof(float), &v[0]);
-  oclSetup.queue.finish();
 }
 
 int oclZeroCopyHostToDeviceBandwidth(std::vector<float>& v) {
+  Buffer buffer(oclSetup.context,CL_MEM_USE_HOST_PTR|CL_MEM_READ_ONLY
+                , v.size()*sizeof(float), &v[0]);
+
+  cl_int i;
+  Buffer iBuffer(oclSetup.context,CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY
+                , sizeof(cl_int), &i);
+
+
+  oclSetup.hostToDeviceKernel.setArg(0, buffer);
+  oclSetup.hostToDeviceKernel.setArg(1, iBuffer);
+  oclSetup.queue.enqueueNDRangeKernel(oclSetup.hostToDeviceKernel
+                                    , NullRange, NDRange(v.size()));
+ 
+  oclSetup.queue.enqueueMapBuffer(iBuffer, CL_TRUE
+                                 , CL_MAP_READ
+                                 , 0, sizeof(cl_int)
+                                 , NULL, NULL, NULL);
+  return (int)i;
 }
 
 int oclDeviceMemoryHostToDeviceBandwidth(std::vector<float>& v) {
+  Buffer buffer(oclSetup.context, CL_MEM_READ_ONLY
+                , v.size()*sizeof(float));
+  oclSetup.queue.enqueueWriteBuffer(buffer,CL_FALSE,0
+                , v.size()*sizeof(float),&v[0]);
+  
+  cl_int i;
+  Buffer iBuffer(oclSetup.context,CL_MEM_USE_HOST_PTR|CL_MEM_WRITE_ONLY
+                , sizeof(cl_int), &i);
+
+  oclSetup.hostToDeviceKernel.setArg(0, buffer);
+  oclSetup.hostToDeviceKernel.setArg(1, iBuffer);
+  oclSetup.queue.enqueueNDRangeKernel(oclSetup.hostToDeviceKernel
+                                    , NullRange, NDRange(v.size()));
+ 
+  oclSetup.queue.enqueueMapBuffer(iBuffer, CL_TRUE
+                                 , CL_MAP_READ
+                                 , 0, sizeof(cl_int)
+                                 , NULL, NULL, NULL);
+  return (int)i;
 }
 
 
