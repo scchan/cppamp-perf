@@ -1,0 +1,27 @@
+#!/bin/bash
+
+commands=( 
+           "./memtest_opencl"
+           "./memtest_amp"
+         )
+
+sizes=(
+         4
+         8
+        16
+        32
+        64
+        128
+        256
+        512
+     )
+
+for i in ${!commands[*]}
+do
+  for j in ${!sizes[*]}
+  do
+    c=""${commands[$i]}" -m ${sizes[$j]} -i 10"
+    printf " %s\n" "$c"
+    $c
+  done
+done

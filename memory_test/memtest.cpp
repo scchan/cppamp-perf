@@ -328,6 +328,7 @@ const char* MemTestNames[] {
   output << separator << "Transfer Size (MB)";
   output << separator << "Average Time (ms)";
   output << separator << "Bandwidth (GB/s)";
+  output << separator << "Errors";
   output << std::endl;
 
   srand(time(NULL));
@@ -384,6 +385,7 @@ const char* MemTestNames[] {
       output << separator << parser.memSizeMB;
       output << separator << tq.getAverageTime();
       output << separator << bandwidth;
+      output << separator << error;
       output << std::endl;
     }
   }
@@ -420,13 +422,14 @@ const char* MemTestNames[] {
     };
 
     TimerEventQueue tq;
+    int error = 0;
     for (unsigned int i = 0; i < numIter; i++) {
       float r = rand();
       {
         SimpleTimer timer(tq);
         deviceToHostTest(v,r);
       }
-      int c = std::count_if(v.begin(), v.end(), output_ref(r));
+      error+=std::count_if(v.begin(), v.end(), output_ref(r));
     }
 
     if (tq.getNumEvents() > 0) {
@@ -435,6 +438,7 @@ const char* MemTestNames[] {
       output << separator << parser.memSizeMB;
       output << separator << tq.getAverageTime();
       output << separator << bandwidth;
+      output << separator << error;
       output << std::endl;
     }
   }
