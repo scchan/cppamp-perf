@@ -8,7 +8,6 @@
 class TimerEvent;
 class Timer;
 
-
 class TimerStackImpl;
 class TimerStack {
 public:
@@ -36,20 +35,20 @@ private:
 };
 
 
-class TimerEventQueueImpl;
+class TimerEventQueueData;
 class TimerEventQueue {
 public:
   TimerEventQueue();
   ~TimerEventQueue();
   unsigned int getNewTimer(const char* name="");
   TimerEvent* getTimerEvent(unsigned int index);
+  long long getTotalTime();
   double getAverageTime();
   unsigned int getNumEvents();
   void clear();
-private:
-  TimerEventQueueImpl* impl;
+protected:
+  TimerEventQueueData* data;
 };
-
 
 class SimpleTimer {
 public:

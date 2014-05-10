@@ -278,62 +278,45 @@ Timer::~Timer() {
 }
 
 
-
-
-
-class TimerEventQueueImpl {
+class TimerEventQueueData{
 public:
-  unsigned int getNewTimer(const char* name) {
-    timers.push_back(TimerEvent(std::string(name)));
-    return timers.size()-1;
-  }
-  TimerEvent* getTimer(const unsigned int index) {
-    if (index < timers.size())
-      return &timers[index];
-    else
-      return NULL;
-  }
-  void clear()                 { timers.clear(); }
-  unsigned int getNumEvents() { return (unsigned int)timers.size(); }
-  long long getTotalTime() {
-    long long total = 0;
-    for (std::vector<TimerEvent>::iterator it = timers.begin();
-      it != timers.end(); it++) {
-      total+=it->getElapsedTime();
-    }
-    return total;
-  }
-  double getAverageTime() {
-    if (timers.size() == 0) 
-      return 0.0;
-    else
-      return (getTotalTime()/(double)timers.size());
-  }
-protected:
   std::vector<TimerEvent> timers;
 };
 
-
-TimerEventQueue::TimerEventQueue() {
-  impl = new TimerEventQueueImpl();
-}
-
-TimerEventQueue::~TimerEventQueue() {
-  if (impl)
-    delete impl;
-}
+TimerEventQueue::TimerEventQueue() {  data = new TimerEventQueueData(); }
+TimerEventQueue::~TimerEventQueue() { delete data; }
 
 unsigned int TimerEventQueue::getNewTimer(const char* name) {
-  return impl->getNewTimer(name);
+    data->timers.push_back(TimerEvent(std::string(name)));
+    return data->timers.size()-1;
 }
 
-TimerEvent* TimerEventQueue::getTimerEvent(const unsigned int index) {
-  return impl->getTimer(index);
+TimerEvent* TimerEventQueue::getTimerEvent(const unsigned int index) { 
+  if (index < data->timers.size())
+    return &(data->timers[index]);
+  else
+    return NULL;
 }
 
-void TimerEventQueue::clear()                 { impl->clear(); }
-unsigned int TimerEventQueue::getNumEvents() { return impl->getNumEvents(); }
-double TimerEventQueue::getAverageTime()   { return impl->getAverageTime(); }
+void TimerEventQueue::clear()                 { data->timers.clear(); }
+
+unsigned int TimerEventQueue::getNumEvents()  {  return (unsigned int)data->timers.size();  }
+
+long long  TimerEventQueue::getTotalTime() {
+  long long total = 0;
+  for (std::vector<TimerEvent>::iterator it = data->timers.begin();
+    it != data->timers.end(); it++) {
+    total+=it->getElapsedTime();
+  }
+  return total;
+}
+
+double TimerEventQueue::getAverageTime() {
+  if (data->timers.size() == 0) 
+    return 0.0;
+  else
+    return (getTotalTime()/(double)data->timers.size());
+}
 
 
 SimpleTimer::SimpleTimer(TimerEventQueue& q, const char* name)  {
