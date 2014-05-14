@@ -416,17 +416,7 @@ void TimerEventQueue::dumpTimeline() {
 void TimerEventQueue::dump_visjs_Timeline() {
 
   std::stringstream ss;
-
-/*
-    var data = [
-    {id: 1, content: 'item 1', start: '2013-04-20'},
-    {id: 2, content: 'item 2', start: '2013-04-14'},
-    {id: 3, content: 'item 3', start: '2013-04-18'},
-    {id: 4, content: 'item 4', start: '2013-04-16', end: '2013-04-19'},
-    {id: 5, content: 'item 5', start: '2013-04-25'},
-    {id: 6, content: 'item 6', start: '2013-04-27'}
-  ];
-*/
+  std::stringstream var;
 
   ss << std::endl << "var data = [" << std::endl;
 
@@ -434,22 +424,26 @@ void TimerEventQueue::dump_visjs_Timeline() {
   for (std::vector<TimerEvent>::iterator iter = data->timers.begin();
       iter != data->timers.end(); iter++,i++) {
 
-#define ADD_VISJS_TIMELINE_ROW(stream,id,start,end,elapsed,name) (stream) << "\t {id: " << id \
-                                      << ", content: '" << (name) << "'"\
+#define DEFINE_ITEM(stream,id,elapsed,name) (stream) << std::endl << "var item" << (id) << " = document.createElement('div');" << std::endl\
+                                      << "item" << (id) << ".setAttribute('title', '" << (elapsed) << " ms');" << std::endl\
+                                      << "item" << (id) << ".setAttribute('style', 'font-size:10pt;');" << std::endl\
+                                      << "item" << (id) << ".appendChild(document.createTextNode('" << name << "'));" << std::endl;
+
+#define ADD_VISJS_TIMELINE_ROW(stream,id,start,end) (stream) << "\t {id: " << (id) \
+                                      << ", content: item" << (id) \
                                       << ", start: " << (start) \
                                       << ", end: " << (end) \
-                                      << ", elapsed: " << (elapsed) \
                                       << "}," << std::endl;
 
-    ADD_VISJS_TIMELINE_ROW(ss,i,iter->startTime,iter->endTime,iter->getElapsedTime(),iter->name);
+    DEFINE_ITEM(var,i,iter->getElapsedTime(),iter->name);
+    ADD_VISJS_TIMELINE_ROW(ss,i,iter->startTime,iter->endTime);
   }
 
   ss << "];" << std::endl;
-
   
   std::string htmlString = std::string(visjs_timeline_template);
   size_t location = htmlString.find("<TIMELINE_CHART_DATA>");
-  htmlString.replace(location, std::string("<TIMELINE_CHART_DATA>").size(), ss.str());
+  htmlString.replace(location, std::string("<TIMELINE_CHART_DATA>").size(), var.str()+ss.str());
 
   std::stringstream filename;
   filename << data->prefix << ".html";
