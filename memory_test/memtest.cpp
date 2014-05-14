@@ -279,6 +279,7 @@ private:
 
 
 int main(int argc, char* argv[]) {
+  TimerEventQueue tq;
 
 enum {
   MEMTEST_HOST_TO_DEVICE_TEST = 0
@@ -367,23 +368,23 @@ const char* MemTestNames[] {
       break;
     };
 
-    TimerEventQueue tq;
     int error = 0;
     for (unsigned int i = 0; i < numIter; i++) {
       int result;
       {
-        SimpleTimer timer(tq);
+        SimpleTimer timer(tq, MemTestNames[t]);
         result = hostToDeviceTest(v);
       }
       if (result!=v.size()-1)
         error++;
     }
 
-    if (tq.getNumEvents()>0) {
-      double bandwidth = (parser.memSizeMB/1024.0)/(tq.getAverageTime()/1000.0f);
+    if (tq.getNumEvents(MemTestNames[t])>0) {
+      double average = tq.getAverageTime(MemTestNames[t]);
+      double bandwidth = (parser.memSizeMB/1024.0)/(average/1000.0f);
       output << MemTestNames[t];
       output << separator << parser.memSizeMB;
-      output << separator << tq.getAverageTime();
+      output << separator << average;
       output << separator << bandwidth;
       output << separator << error;
       output << std::endl;
@@ -421,22 +422,22 @@ const char* MemTestNames[] {
       break;
     };
 
-    TimerEventQueue tq;
     int error = 0;
     for (unsigned int i = 0; i < numIter; i++) {
       float r = rand();
       {
-        SimpleTimer timer(tq);
+        SimpleTimer timer(tq, MemTestNames[t]);
         deviceToHostTest(v,r);
       }
       error+=std::count_if(v.begin(), v.end(), output_ref(r));
     }
 
     if (tq.getNumEvents() > 0) {
-      double bandwidth = (parser.memSizeMB/1024.0)/(tq.getAverageTime()/1000.0f);
+      double average = tq.getAverageTime(MemTestNames[t]);
+      double bandwidth = (parser.memSizeMB/1024.0)/(average/1000.0f);
       output << MemTestNames[t];
       output << separator << parser.memSizeMB;
-      output << separator << tq.getAverageTime();
+      output << separator << average;
       output << separator << bandwidth;
       output << separator << error;
       output << std::endl;
@@ -444,7 +445,10 @@ const char* MemTestNames[] {
   }
  
   std::stringstream filename;
-  filename << argv[0] << "_m_" << parser.memSizeMB << "_i_" << parser.iterations << ".log";
+  filename << argv[0] << "_m_" << parser.memSizeMB << "_i_" << parser.iterations;
+  tq.setLogPrefix((filename.str()+std::string("_visjs")).c_str());
+
+  filename << ".log";
   std::ofstream file;
   file.open(filename.str().c_str(), std::ios::trunc);
   file << output.str();

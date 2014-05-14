@@ -19,6 +19,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <stack>
+#include <queue>
+
 
 #include "StackTimer.hpp"
 #include "StackTimer.h"
@@ -234,6 +238,7 @@ void TimerStackImpl::setLogPrefix(const char* prefix) {
 
 
 TimerStackImpl::~TimerStackImpl() {
+
   dumpTimerStackGoogleTimeline();
   dumpTimerStack();
   // delete all the timer events
@@ -280,11 +285,23 @@ Timer::~Timer() {
 
 class TimerEventQueueData{
 public:
+  std::string prefix;
   std::vector<TimerEvent> timers;
 };
 
-TimerEventQueue::TimerEventQueue() {  data = new TimerEventQueueData(); }
-TimerEventQueue::~TimerEventQueue() { delete data; }
+TimerEventQueue::TimerEventQueue() {  
+  data = new TimerEventQueueData();
+
+  std::stringstream ss;
+  ss << (int)GETPID();
+  data->prefix = ss.str();
+}
+
+TimerEventQueue::~TimerEventQueue() {
+  //dumpTimeline();
+  dump_visjs_Timeline();
+  delete data; 
+}
 
 unsigned int TimerEventQueue::getNewTimer(const char* name) {
     data->timers.push_back(TimerEvent(std::string(name)));
@@ -302,6 +319,19 @@ void TimerEventQueue::clear()                 { data->timers.clear(); }
 
 unsigned int TimerEventQueue::getNumEvents()  {  return (unsigned int)data->timers.size();  }
 
+double TimerEventQueue::getNumEvents(const char* name) {
+  unsigned int numEvents = 0;
+  std::string n = std::string(name);
+  for (std::vector<TimerEvent>::iterator it = data->timers.begin();
+    it != data->timers.end(); it++) {
+    if (n == it->name) {
+      numEvents++;
+    }
+  }
+  return numEvents;
+}
+
+
 long long  TimerEventQueue::getTotalTime() {
   long long total = 0;
   for (std::vector<TimerEvent>::iterator it = data->timers.begin();
@@ -311,11 +341,122 @@ long long  TimerEventQueue::getTotalTime() {
   return total;
 }
 
+long long TimerEventQueue::getTotalTime(const char* name) {
+  long long total = 0;
+  std::string n = std::string(name);
+  for (std::vector<TimerEvent>::iterator it = data->timers.begin();
+    it != data->timers.end(); it++) {
+    if (n == it->name) {
+      total+=it->getElapsedTime();
+    }
+  }
+  return total;
+}
+
+
 double TimerEventQueue::getAverageTime() {
   if (data->timers.size() == 0) 
     return 0.0;
   else
     return (getTotalTime()/(double)data->timers.size());
+}
+
+double TimerEventQueue::getAverageTime(const char* name) {
+  long long total = 0;
+  unsigned int numEvents = 0;
+  std::string n = std::string(name);
+  for (std::vector<TimerEvent>::iterator it = data->timers.begin();
+    it != data->timers.end(); it++) {
+    if (n == it->name) {
+      numEvents++;
+      total+=it->getElapsedTime();
+    }
+  }
+  if (numEvents==0)
+    return 0;
+  else
+    return (double)total/(double)numEvents;
+}
+
+void TimerEventQueue::setLogPrefix(const char* prefix) {
+  data->prefix = std::string(prefix);
+}
+
+void TimerEventQueue::dumpTimeline() {
+
+  std::stringstream ss;
+
+  ss << std::endl << "data.addRows([" << std::endl;
+
+  for (std::vector<TimerEvent>::iterator iter = data->timers.begin();
+      iter != data->timers.end(); iter++) {
+
+#define ADD_TIMELINE_ROW(stream,start,end,name) (stream) << "\t [new Date(" << (start) << "),new Date(" << (end) << "), '" << (name) << "']," << std::endl;
+
+    ADD_TIMELINE_ROW(ss,iter->startTime,iter->endTime,iter->name);
+
+  }
+
+  ss << "]);" << std::endl;
+
+  
+  std::string htmlString = std::string(timeline_template);
+  size_t location = htmlString.find("<TIMELINE_CHART_DATA>");
+  htmlString.replace(location, std::string("<TIMELINE_CHART_DATA>").size(), ss.str());
+
+  std::stringstream filename;
+  filename << data->prefix << ".html";
+  std::ofstream file;
+  file.open(filename.str().c_str(), std::ios::trunc);
+  file << htmlString;
+  file.close();
+}
+
+
+void TimerEventQueue::dump_visjs_Timeline() {
+
+  std::stringstream ss;
+
+/*
+    var data = [
+    {id: 1, content: 'item 1', start: '2013-04-20'},
+    {id: 2, content: 'item 2', start: '2013-04-14'},
+    {id: 3, content: 'item 3', start: '2013-04-18'},
+    {id: 4, content: 'item 4', start: '2013-04-16', end: '2013-04-19'},
+    {id: 5, content: 'item 5', start: '2013-04-25'},
+    {id: 6, content: 'item 6', start: '2013-04-27'}
+  ];
+*/
+
+  ss << std::endl << "var data = [" << std::endl;
+
+  unsigned int i = 0;
+  for (std::vector<TimerEvent>::iterator iter = data->timers.begin();
+      iter != data->timers.end(); iter++,i++) {
+
+#define ADD_VISJS_TIMELINE_ROW(stream,id,start,end,elapsed,name) (stream) << "\t {id: " << id \
+                                      << ", content: '" << (name) << "'"\
+                                      << ", start: " << (start) \
+                                      << ", end: " << (end) \
+                                      << ", elapsed: " << (elapsed) \
+                                      << "}," << std::endl;
+
+    ADD_VISJS_TIMELINE_ROW(ss,i,iter->startTime,iter->endTime,iter->getElapsedTime(),iter->name);
+  }
+
+  ss << "];" << std::endl;
+
+  
+  std::string htmlString = std::string(visjs_timeline_template);
+  size_t location = htmlString.find("<TIMELINE_CHART_DATA>");
+  htmlString.replace(location, std::string("<TIMELINE_CHART_DATA>").size(), ss.str());
+
+  std::stringstream filename;
+  filename << data->prefix << ".html";
+  std::ofstream file;
+  file.open(filename.str().c_str(), std::ios::trunc);
+  file << htmlString;
+  file.close();
 }
 
 

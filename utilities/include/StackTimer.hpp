@@ -1,9 +1,6 @@
 #ifndef _STACKTIMER_HPP
 #define _STACKTIMER_HPP
 
-#include <string>
-#include <stack>
-#include <queue>
 
 class TimerEvent;
 class Timer;
@@ -43,9 +40,17 @@ public:
   unsigned int getNewTimer(const char* name="");
   TimerEvent* getTimerEvent(unsigned int index);
   long long getTotalTime();
+  long long getTotalTime(const char* name);
   double getAverageTime();
+  double getAverageTime(const char* name);
   unsigned int getNumEvents();
+  double getNumEvents(const char* name);
   void clear();
+  
+  void setLogPrefix(const char* prefix);
+  void dumpTimeline();
+  void dump_visjs_Timeline();
+
 protected:
   TimerEventQueueData* data;
 };

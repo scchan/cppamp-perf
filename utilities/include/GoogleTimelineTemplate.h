@@ -27,6 +27,141 @@ const char* google_html_template = STRINGIFYNNL(
 </html>
 );
 
+
+
+const char* timeline_template = STRINGIFYNNL(
+
+<html>
+<head>
+    <title>Timeline demo</title>
+
+    <style type=\x22text/css\x22>
+        body {font: 10pt arial;}
+    </style>
+
+    <script type=\x22text/javascript\x22 src=\x22http://www.google.com/jsapi\x22></script>
+    <script type=\x22text/javascript\x22 src=\x22../timeline.js\x22></script>
+    <link rel=\x22stylesheet\x22 type=\x22text/css\x22 href=\x22../timeline.css\x22>
+
+    <script type=\x22text/javascript\x22>
+        var timeline;
+
+        google.load(\x22visualization\x22, \x221\x22);
+
+        // Set callback to run when API is loaded
+        google.setOnLoadCallback(drawVisualization);
+
+        // Called when the Visualization API is loaded.
+        function drawVisualization() {
+            // Create and populate a data table.
+            var data = new google.visualization.DataTable();
+            data.addColumn('datetime', 'start');
+            data.addColumn('datetime', 'end');
+            data.addColumn('string', 'content');
+            
+<TIMELINE_CHART_DATA>
+
+            // specify options
+            var options = {
+                \x22width\x22:  \x22 100%\x22,
+                \x22height\x22: \x22 300px\x22,
+                \x22style\x22: \x22box\x22
+            };
+
+            // Instantiate our timeline object.
+            timeline = new links.Timeline(document.getElementById('mytimeline'));
+
+            // Draw our timeline with the created data and options
+            timeline.draw(data, options);
+        }
+    </script>
+</head>
+
+<body>
+<div id=\x22mytimeline\x22></div>
+
+<!-- Information about where the used icons come from -->
+<p style=\x22color:gray; font-size:10px; font-style:italic;\x22>
+    Icons by <a href=\x22http://dryicons.com\x22 target=\x22_blank\x22 title=\x22Aesthetica 2 Icons by DryIcons\x22 style=\x22color:gray;\x22 >DryIcons</a>
+    and <a href=\x22http://www.tpdkdesign.net\x22 target=\x22_blank\x22 title=\x22Refresh Cl Icons by TpdkDesign.net\x22 style=\x22color:gray;\x22 >TpdkDesign.net</a>
+</p>
+
+</body>
+</html>
+
+
+);
+
+
+const char* visjs_timeline_template = STRINGIFYNNL(
+
+<!doctype html>
+<html>
+<head>
+  <title>Timeline | Basic demo</title>
+  <script src="http://visjs.org/dist/vis.js"></script>
+  <link href="http://visjs.org/dist/vis.css" rel="stylesheet" type="text/css" />
+
+  <style type="text/css">
+    body, html {
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+<div id="mytimeline"></div>
+<p></p>
+<div id="log"></div>
+
+<script type="text/javascript">
+  var container = document.getElementById('mytimeline');
+ var options = {
+      editable: true
+    };
+<!--
+  var data = [
+    {id: 1, content: 'item 1', start: '2013-04-20'},
+    {id: 2, content: 'item 2', start: '2013-04-14'},
+    {id: 3, content: 'item 3', start: '2013-04-18'},
+    {id: 4, content: 'item 4', start: '2013-04-16', end: '2013-04-19'},
+    {id: 5, content: 'item 5', start: '2013-04-25'},
+    {id: 6, content: 'item 6', start: '2013-04-27'}
+  ];
+-->
+
+<TIMELINE_CHART_DATA>
+
+
+
+  var options = {};
+  var timeline = new vis.Timeline(container, data, options);
+
+
+
+
+      timeline.on('select', function (properties) {
+      logEvent('select', properties);
+    });
+
+    items.on('*', function (event, properties) {
+      logEvent(event, properties);
+    });
+
+    function logEvent(event, properties) {
+      var log = document.getElementById('log');
+      var msg = document.createElement('div');
+      msg.innerHTML = 'event=' + JSON.stringify(event) + ', ' +
+          'properties=' + JSON.stringify(properties);
+      log.firstChild ? log.insertBefore(msg, log.firstChild) : log.appendChild(msg);
+    }
+
+</script>
+</body>
+</html>
+
+
+);
+
 #ifdef __cplusplus
 }
 #endif
