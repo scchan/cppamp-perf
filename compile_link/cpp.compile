@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+CPPAMP_BUILD=/home/xkerox/Code/bitbucket/cppamp_new_driver/release_build/
+CPPAMP_PATH="$CPPAMP_BUILD/compiler/bin:$CPPAMP_BUILD/lib:$CPPAMP_BUILD/build/Release/bin"
+export PATH=$PATH:$CPPAMP_PATH
+
+SOURCE=$1
+shift
+
+
+COMMAND="clang++ `clamp-config --build --cxxflags` -Xclang -fhsa-ext -c $SOURCE -o $SOURCE.o $@"
+echo $COMMAND
+$COMMAND
