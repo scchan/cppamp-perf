@@ -247,6 +247,7 @@ public:
   enum AMPBSMode {
     AMP_BS_ARRAY
     ,AMP_BS_ARRAYVIEW
+    ,AMP_BS_SVM
   };
 
   void runBlackScholesArrayView(float* inputPtr
@@ -297,6 +298,28 @@ public:
     pf.wait();
   }
 
+
+  void runBlackScholesSVM(float* inputPtr
+                   , float* gpuCall, float* gpuPut
+                   , const unsigned int num) {
+
+    AUTOTIMER(timer,__FUNCTION__);
+
+    int flag = 0;
+    array_view<int> flag_v(extent<1>(1),&flag);
+
+    parallel_for_each(extent<1>(num), [=] (index<1> id) restrict(amp) {
+      float call, put;
+      calculateBlackScholes(inputPtr[id[0]], &call, &put); 
+      gpuCall[id[0]] = call;
+      gpuPut[id[0]] = put;
+    });
+    flag_v.synchronize_async().wait();
+  }
+
+
+
+
   void runBlackScholes(float* inputPtr
                    , float* gpuCall, float* gpuPut
                    , const unsigned int num
@@ -308,6 +331,9 @@ public:
       break;
     case AMP_BS_ARRAYVIEW:
       runBlackScholesArrayView(inputPtr, gpuCall, gpuPut, num); 
+      break;
+    case AMP_BS_SVM:
+      runBlackScholesSVM(inputPtr, gpuCall, gpuPut, num); 
       break;
     default:
       return;
@@ -375,6 +401,10 @@ public:
       else if (strcmp(argv[n],"-amparray")==0) {
         ampMode = AMPBlackScholes::AMP_BS_ARRAY;
         modeString = std::string("amparray");
+      }
+      else if (strcmp(argv[n],"-ampsvm")==0) {
+        ampMode = AMPBlackScholes::AMP_BS_SVM;
+        modeString = std::string("ampsvm");
       }
 #endif
 
