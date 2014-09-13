@@ -2,7 +2,7 @@
 #include <amp.h>
 using namespace concurrency;
 
-void calculate(float* output, float* inputA, float* inputB, const unsigned int num) {
+void accelerated_lib(float* output, float* inputA, float* inputB, const unsigned int num) {
 
   int flag = 0;
   array_view<int> flag_v(extent<1>(1),&flag);
@@ -15,4 +15,13 @@ void calculate(float* output, float* inputA, float* inputB, const unsigned int n
   flag_v.synchronize_async().wait();
 
   return;
+}
+
+
+float compute_restrict(float a, float b) restrict(amp) {
+  return a + b;
+}
+
+float compute(float a, float b) {
+  return a + b;
 }
