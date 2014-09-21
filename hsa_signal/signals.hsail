@@ -1,0 +1,952 @@
+version 0:20140528:$full:$large;
+extension "amd:gcn";
+extension "IMAGE";
+decl prog function &signal_ld_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle);
+decl prog function &signal_ld_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle);
+decl prog function &signalnoret_st_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_st_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_and_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_and_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_and_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_and_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_and_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_and_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_and_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_and_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_or_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_or_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_or_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_or_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_or_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_or_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_or_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_or_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_xor_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_xor_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_xor_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_xor_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_xor_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_xor_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_xor_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_xor_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_exch_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_exch_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_exch_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_exch_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_rlx_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_rlx_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_rlx_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_scacq_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_scacq_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_scacq_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_screl_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_screl_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_screl_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_screl_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_scar_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_scar_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_add_scar_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_add_scar_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_rlx_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_rlx_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_rlx_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_scacq_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_scacq_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_scacq_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_screl_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_screl_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_screl_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_screl_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_scar_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_scar_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_sub_scar_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_sub_scar_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signalnoret_cas_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_cas_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signalnoret_cas_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_cas_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signalnoret_cas_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_cas_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signalnoret_cas_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_cas_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_wait_eq_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_wait_eq_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_wait_ne_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_wait_ne_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_wait_lt_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_wait_lt_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_wait_gte_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_wait_gte_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0);
+decl prog function &signal_waittimeout_eq_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_waittimeout_eq_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_waittimeout_ne_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_waittimeout_ne_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_waittimeout_lt_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_waittimeout_lt_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_waittimeout_gte_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+decl prog function &signal_waittimeout_gte_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1);
+
+prog function &signal_ld_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle)
+{
+@signal_ld_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  signal_ld_rlx_b64_sig64 $d0, $d0;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_ld_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle)
+{
+@signal_ld_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  signal_ld_scacq_b64_sig64 $d0, $d0;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_st_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_st_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_st_rlx_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signalnoret_st_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_st_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_st_screl_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signalnoret_and_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_and_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_and_rlx_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_and_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_and_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_and_rlx_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_and_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_and_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_and_scacq_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_and_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_and_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_and_scacq_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_and_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_and_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_and_screl_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_and_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_and_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_and_screl_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_and_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_and_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_and_scar_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_and_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_and_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_and_scar_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_or_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_or_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_or_rlx_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_or_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_or_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_or_rlx_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_or_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_or_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_or_scacq_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_or_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_or_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_or_scacq_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_or_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_or_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_or_screl_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_or_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_or_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_or_screl_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_or_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_or_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_or_scar_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_or_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_or_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_or_scar_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_xor_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_xor_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_xor_rlx_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_xor_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_xor_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_xor_rlx_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_xor_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_xor_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_xor_scacq_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_xor_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_xor_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_xor_scacq_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_xor_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_xor_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_xor_screl_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_xor_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_xor_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_xor_screl_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_xor_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_xor_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_xor_scar_b64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_xor_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_xor_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_xor_scar_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_exch_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_exch_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_exch_rlx_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_exch_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_exch_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_exch_scacq_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_exch_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_exch_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_exch_screl_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_exch_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_exch_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_exch_scar_b64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_rlx_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_rlx_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_rlx_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_rlx_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_rlx_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_rlx_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_rlx_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_rlx_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_rlx_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_scacq_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_scacq_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_scacq_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_scacq_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_scacq_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_scacq_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_scacq_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_scacq_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_scacq_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_screl_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_screl_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_screl_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_screl_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_screl_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_screl_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_screl_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_screl_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_screl_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_screl_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_screl_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_screl_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_scar_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_scar_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_scar_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_scar_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_scar_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_scar_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_add_scar_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_add_scar_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_add_scar_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_add_scar_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_add_scar_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_add_scar_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_rlx_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_rlx_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_rlx_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_rlx_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_rlx_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_rlx_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_rlx_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_rlx_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_rlx_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_scacq_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_scacq_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_scacq_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_scacq_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_scacq_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_scacq_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_scacq_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_scacq_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_scacq_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_screl_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_screl_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_screl_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_screl_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_screl_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_screl_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_screl_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_screl_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_screl_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_screl_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_screl_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_screl_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_scar_u64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_scar_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_scar_u64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_scar_u64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_scar_u64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_scar_u64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_sub_scar_s64_sig64()(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signalnoret_sub_scar_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signalnoret_sub_scar_s64_sig64 $d0, $d1;
+  ret;
+};
+
+prog function &signal_sub_scar_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_sub_scar_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_sub_scar_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_cas_rlx_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signalnoret_cas_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d2, [%src1];
+  signalnoret_cas_rlx_b64_sig64 $d0, $d1, $d2;
+  ret;
+};
+
+prog function &signal_cas_rlx_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_cas_rlx_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_cas_rlx_b64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_cas_scacq_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signalnoret_cas_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d2, [%src1];
+  signalnoret_cas_scacq_b64_sig64 $d0, $d1, $d2;
+  ret;
+};
+
+prog function &signal_cas_scacq_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_cas_scacq_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_cas_scacq_b64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_cas_screl_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signalnoret_cas_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d2, [%src1];
+  signalnoret_cas_screl_b64_sig64 $d0, $d1, $d2;
+  ret;
+};
+
+prog function &signal_cas_screl_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_cas_screl_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_cas_screl_b64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signalnoret_cas_scar_b64_sig64()(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signalnoret_cas_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d2, [%src1];
+  signalnoret_cas_scar_b64_sig64 $d0, $d1, $d2;
+  ret;
+};
+
+prog function &signal_cas_scar_b64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_cas_scar_b64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_cas_scar_b64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_eq_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_eq_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_eq_rlx_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_eq_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_eq_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_eq_scacq_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_ne_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_ne_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_ne_rlx_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_ne_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_ne_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_ne_scacq_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_lt_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_lt_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_lt_rlx_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_lt_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_lt_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_lt_scacq_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_gte_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_gte_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_gte_rlx_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_wait_gte_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0)
+{
+@signal_wait_gte_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  signal_wait_gte_scacq_s64_sig64 $d0, $d0, $d1;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_eq_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_eq_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_eq_rlx_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_eq_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_eq_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_eq_scacq_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_ne_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_ne_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_ne_rlx_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_ne_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_ne_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_ne_scacq_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_lt_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_lt_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_lt_rlx_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_lt_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_lt_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_lt_scacq_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_gte_rlx_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_gte_rlx_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_gte_rlx_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
+prog function &signal_waittimeout_gte_scacq_s64_sig64(arg_u64 %ret)(arg_u64 %signalHandle, arg_u64 %src0, arg_u64 %src1)
+{
+@signal_waittimeout_gte_scacq_s64_sig64_entry: 
+  ld_arg_align(8)_u64	$d0, [%signalHandle];
+  ld_arg_align(8)_u64	$d1, [%src0];
+  ld_arg_align(8)_u64	$d3, [%src1];
+  signal_waittimeout_gte_scacq_s64_sig64 $d0, $d0, $d1, $d2;
+  st_arg_align(8)_u64	$d0, [%ret];
+  ret;
+};
+
