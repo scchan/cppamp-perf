@@ -31,7 +31,7 @@ memtest_opencl: memtest.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
 memtest_amp: memtest.cpp
-	../script/buildme_mod memtest.cpp -I../utilities/include -DENABLE_CPPAMP $(UTIL_INCLUDE) $(UTIL_LIB);mv memtest.cpp.out memtest_amp
+	clang++ `clamp-config --install --cxxflags --ldflags` -Xclang -fhsa-ext memtest.cpp -I../utilities/include -DENABLE_CPPAMP $(UTIL_INCLUDE) $(UTIL_LIB) -o memtest_amp
 
 clean:
 	rm -f memtest_opencl memtest_amp kernel.* *.o *.ll

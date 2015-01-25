@@ -31,7 +31,7 @@ bs_opencl: bs_opencl.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
 bs_amp: bs_opencl.cpp
-	../script/buildme_mod bs_opencl.cpp -I../utilities/include -DENABLE_CPPAMP $(UTIL_INCLUDE) $(UTIL_LIB);mv bs_opencl.cpp.out bs_amp
+	clang++ `clamp-config --install --cxxflags --ldflags` -Xclang -fhsa-ext bs_opencl.cpp -I../utilities/include -DENABLE_CPPAMP $(UTIL_INCLUDE) $(UTIL_LIB) -o bs_amp
 
 clean:
 	rm -f bs_opencl bs_amp kernel.* *.o *.ll
