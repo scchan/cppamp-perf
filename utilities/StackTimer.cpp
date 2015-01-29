@@ -90,6 +90,14 @@ public:
     std::stringstream ss;
     ss << (int)GETPID();
     prefix = ss.str();
+
+    enable = 0;
+    const char* timer_enable_str = getenv("TIMER_ENABLE");
+    if (timer_enable_str!=NULL) {
+      if (std::string(timer_enable_str)=="1") {
+        enable = 1;
+      }
+    }
   }
 
   void StartTimer(const char* name);
@@ -106,6 +114,7 @@ protected:
   std::queue<TimerEvent*> startQueue;
   std::queue<TimerEvent*> endQueue;
   std::string prefix;
+  char enable;
 
   void dumpTimerStackGoogleTimeline();
 };
@@ -150,6 +159,9 @@ void TimerStackImpl::dumpTimerStackGoogleTimeline() {
 }
 
 void TimerStackImpl::StartTimer(const char* name) {
+  if (!enable)
+    return;
+
   TimerEvent* e = new TimerEvent(std::string(name));
   e->nestedLevel = (unsigned int)timerStack.size();
   maxNestedLevel = (e->nestedLevel > maxNestedLevel) ? e->nestedLevel : maxNestedLevel;
@@ -158,6 +170,9 @@ void TimerStackImpl::StartTimer(const char* name) {
   e->recordStartTime();
 }
 void TimerStackImpl::StopTimer(const char* name) {
+  if (!enable)
+    return;
+
   TimerEvent* e = timerStack.top();
   e->recordEndTime();
   timerStack.pop();
@@ -201,7 +216,6 @@ public:
 };
 
 void TimerStackImpl::dumpTimerStack() {
-
   std::stringstream filename;
   filename << prefix << ".log";
   std::ofstream file;
@@ -238,9 +252,12 @@ void TimerStackImpl::setLogPrefix(const char* prefix) {
 
 
 TimerStackImpl::~TimerStackImpl() {
+  
+  if (enable) {
+    dumpTimerStackGoogleTimeline();
+    dumpTimerStack();
+  }
 
-  dumpTimerStackGoogleTimeline();
-  dumpTimerStack();
   // delete all the timer events
   while (!endQueue.empty()) {
     delete endQueue.front();

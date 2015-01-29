@@ -17,6 +17,7 @@ public:
   void dumpTimerStack();
   void setLogPrefix(const char* prefix);
   static TimerStack* getDefaultTimerStack();
+
 protected:
   TimerStackImpl* impl;
   Timer* timer;
