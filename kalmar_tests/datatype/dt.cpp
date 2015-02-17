@@ -7,12 +7,15 @@
 #include <amp.h>
 
 #if defined(RESTRICT_AMP)
-#define RESTRICT restrict(amp,cpu)
+#define RESTRICT restrict(amp)
+#elif defined(RESTRICT_CPU)
+#define RESTRICT restrict(cpu)
 #elif defined(RESTRICT_AUTO)
 #define RESTRICT restrict(auto)
 #else
 #define RESTRICT 
 #endif
+
 
 using namespace concurrency;
 
@@ -52,6 +55,33 @@ int runTypeTest(std::string typenameString, unsigned int num) {
 }
 
 
+#ifdef TEST_BOOL
+bool isOdd(unsigned int i) RESTRICT {
+  return (i%2!=0);
+}
+
+int runBoolTest(unsigned int num) {
+
+  std::vector<unsigned int> output(num);
+  unsigned int* output_p = output.data();
+
+  parallel_for_each(extent<1>(num), [=](index<1>idx) RESTRICT {
+    bool odd = isOdd(idx[0]);
+    output_p[idx[0]] = odd?idx[0]:idx[0]+100;
+  });
+
+  int errors = 0;
+  for (int i = 0; i < num; i++) {
+    bool odd = isOdd(i);
+    unsigned int expected = odd?i:i+100;
+    if (output[i]!=expected) {
+      errors++;
+    }
+  }
+  std::cout << "runTypeTest<" << "bool" << ">: " << errors << " errors" << std::endl;
+  return errors;
+}
+#endif
 
 int main(int argc, char*argv[]) {
 
@@ -61,6 +91,11 @@ int main(int argc, char*argv[]) {
   }
 
   int errors = 0;
+
+#ifdef TEST_BOOL
+  errors += runBoolTest(num);
+#endif
+
   errors += TEST_TYPE(unsigned char,num);
   errors += TEST_TYPE(char,num);
 
