@@ -31,7 +31,7 @@ unsigned int test_recursive_function(unsigned int numThreads) {
   std::vector<unsigned int> output(numThreads);
 
   unsigned int* output_p = output.data();
-  parallel_for_each(extent<1>(numThreads),[=](index<1>idx) /*RESTRICT*/ restrict(cpu) {
+  parallel_for_each(extent<1>(numThreads),[=](index<1>idx) RESTRICT {
     output_p[idx[0]] = r(idx[0],0);
   });
 
