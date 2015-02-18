@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <typeinfo>
+#include <string>
 #include <amp.h>
 
 #if defined(RESTRICT_AMP)
@@ -16,51 +17,76 @@
 #define RESTRICT 
 #endif
 
+#define TEST_STATIC_MEMBER(T,num)  test_static_member<T>(#T,num)
+
 
 using namespace concurrency;
 
 
+template <typename T>
 class S {
 public:
   unsigned int data;
-  static std::atomic<unsigned int> s_data;
-  void increment(unsigned int v) RESTRICT {
+  static std::atomic<T> s_data;
+  void increment(T v) RESTRICT {
     s_data.fetch_add(v);
   }
 };
-std::atomic<unsigned int> S::s_data;
+
+template <typename T>
+std::atomic<T> S<T>::s_data;
 
 
-bool test_static_member(unsigned int numThreads) {
+template <typename T>
+unsigned int test_static_member(std::string typenameString, unsigned int numThreads) {
 
-  S::s_data.store(0,std::memory_order_release);
+  S<T>::s_data.store(0,std::memory_order_release);
 
   unsigned int sum = 0; 
-  std::vector<S> input(numThreads);
+  std::vector<S<T>> input(numThreads);
   for (int i = 0; i < numThreads; i++) {
     input[i].data = i;
     sum+=i;
   }
 
-  S* input_p = input.data();
+  S<T>* input_p = input.data();
   parallel_for_each(extent<1>(numThreads),[=](index<1>idx) RESTRICT {
     input_p[idx[0]].increment(input_p[idx[0]].data);
   });
 
-  bool error = false;
-  if (fabs(S::s_data-sum) > 0.001) {
-    error = true;
-    std::cout << "Error, expected: " << sum << " actual: " << S::s_data << std::endl;
+  unsigned int error = 0;
+  if (fabs(S<T>::s_data-sum) > 0.001) {
+    error = 1;
+    std::cout << "Error test_static_member<" <<  typenameString << "> expected: " << sum << " actual: " << S<T>::s_data << std::endl;
   }
-
   return error;
 }
 
 
 int main() {
   int num = 100;
-  bool error;
-  error = test_static_member(num);
+  unsigned int error = 0;
+
+/*
+  error += TEST_STATIC_MEMBER(unsigned char,num);
+  error += TEST_STATIC_MEMBER(char,num);
+
+  error += TEST_STATIC_MEMBER(unsigned short,num);
+  error += TEST_STATIC_MEMBER(short,num);
+*/
+
+
+  error += TEST_STATIC_MEMBER(unsigned int,num);
+  error += TEST_STATIC_MEMBER(int,num);
+
+/*
+  error += TEST_STATIC_MEMBER(unsigned long,num);
+  error += TEST_STATIC_MEMBER(long,num);
+
+  error += TEST_STATIC_MEMBER(unsigned long long,num);
+  error += TEST_STATIC_MEMBER(long long,num);
+*/
+
   return error;
 }
 
