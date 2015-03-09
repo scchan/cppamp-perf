@@ -18,6 +18,8 @@
 
 
 union HSAPrintfPacketData {
+  unsigned char uc;
+  char c;
   unsigned int ui;
   int i;
   float f;
@@ -26,7 +28,9 @@ union HSAPrintfPacketData {
 };
 
 enum HSAPrintfPacketDataType {
-   HSA_PRINTF_UNSIGNED_INT = 0
+   HSA_PRINTF_UNSIGNED_CHAR
+  ,HSA_PRINTF_SIGNED_CHAR
+  ,HSA_PRINTF_UNSIGNED_INT
   ,HSA_PRINTF_SIGNED_INT
   ,HSA_PRINTF_FLOAT
   ,HSA_PRINTF_VOID_PTR
@@ -36,6 +40,8 @@ enum HSAPrintfPacketDataType {
 
 class HSAPrintfPacket {
 public:
+  void set(unsigned char d)  { type = HSA_PRINTF_UNSIGNED_CHAR;   data.uc = d; }
+  void set(char d)           { type = HSA_PRINTF_SIGNED_INT;     data.c = d; }
   void set(unsigned int d)  { type = HSA_PRINTF_UNSIGNED_INT;   data.ui = d; }
   void set(int d)           { type = HSA_PRINTF_SIGNED_INT;     data.i = d; }
   void set(float d)         { type = HSA_PRINTF_FLOAT;          data.f = d; }
@@ -53,12 +59,13 @@ enum HSAPrintfError {
 class HSAPrintfPacketQueue {
 public:
   HSAPrintfPacketQueue(HSAPrintfPacket* buffer, unsigned int num)
-        :queue(buffer),num(num),cursor(0){
+        :queue(buffer),num(num),cursor(0),overflow(0) {
     lock = 0;
   }
   HSAPrintfPacket* queue;
   unsigned int num;
   unsigned int cursor;
+  unsigned int overflow;
   std::atomic_int lock;
 };
 
@@ -75,16 +82,11 @@ static inline HSAPrintfPacketQueue* destroyHSAPrintfPacketQueue(HSAPrintfPacketQ
   return NULL;
 }
 
-
-
  
 // get the argument count
 static inline void countArg(unsigned int& count) {}
-
 template <typename T> 
-static inline void countArg(unsigned int& count, const T& t) {
-  count++;
-}
+static inline void countArg(unsigned int& count, const T& t) { count++; }
 template <typename T, typename... Rest> 
 static inline void countArg(unsigned int& count, const T& t, const Rest&... rest) {
   count++;
@@ -109,10 +111,6 @@ static inline HSAPrintfError hsa_printf(HSAPrintfPacketQueue* queue, const char*
   unsigned int count = 0;      
   countArg(count, format, all...);
 
-#ifdef HSA_PRINTF_DEBUG
-  printf("%s:%d \t count = %d\n", __FUNCTION__, __LINE__, count);
-#endif
-
   HSAPrintfError error = HSA_PRINTF_SUCCESS;
   while(1) {
     if (queue->lock.compare_exchange_weak(unlocked, locked
@@ -120,6 +118,7 @@ static inline HSAPrintfError hsa_printf(HSAPrintfPacketQueue* queue, const char*
                                    , std::memory_order_relaxed)) {
       // run out of space
       if ((count + 1) + queue->cursor >= queue->num) {
+        queue->overflow = 1;
         error = HSA_PRINTF_BUFFER_OVERFLOW;
       }
       else {
@@ -140,9 +139,15 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
                                    , std::memory_order_acq_rel
                                    , std::memory_order_relaxed)) ; 
 
-
   // regex for finding format string specifiers
-  std::regex specifierPattern("\%[idfs]");
+  std::regex specifierPattern("\%[diuoxXfFeEgGaAcspn]");
+
+  std::regex signedIntegerPattern("\%[di]");
+  std::regex unsignedIntegerPattern("\%[uoxX]");
+  std::regex floatPattern("\%[fFeEgGaA]");
+  std::regex charPattern("\%c");
+  std::regex stringPattern("\%s");
+  std::regex pointerPattern("\%p");
 
   unsigned int numPackets = 0;
   for (unsigned int i = 0; i < queue->cursor; ) {
@@ -168,26 +173,49 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
     
     for (unsigned int j = 1; j < numPackets; j++,i++) {
 
-      std::regex_search(formatString, specifierMatches, specifierPattern);
-
-
+      if (!std::regex_search(formatString, specifierMatches, specifierPattern)) {
+        // More printf argument than format specifier??
+        // Just skip to the next printf request
+        i = formatStringIndex + numPackets;
+        break;
+      }
 
       std::string specifier = specifierMatches.str();
 #ifdef HSA_PRINTF_DEBUG
       std::cout << " (specifier found: " << specifier << ") ";
 #endif
 
+      // print the string before the specifier
       printf("%s", std::string(specifierMatches.prefix()).c_str());
 
-      if (specifier == std::string("%d")) {
+      
+      std::smatch specifierTypeMatch;
+      if (std::regex_search(specifier, specifierTypeMatch, unsignedIntegerPattern)) {
+        unsigned int value = 0;
+        switch(queue->queue[i].type) {
+          case HSA_PRINTF_UNSIGNED_INT:
+            value = queue->queue[i].data.ui;
+            break;
+          case HSA_PRINTF_SIGNED_INT:
+            value = (unsigned int) queue->queue[i].data.i;
+            break;
+          case HSA_PRINTF_FLOAT:
+            value = (unsigned int)queue->queue[i].data.f;
+            break;
+          default:
+            break;
+        };
+        printf(specifier.c_str(), value);
 
+      } else if (std::regex_search(specifier, specifierTypeMatch, signedIntegerPattern)) {
         int value = 0;
         switch(queue->queue[i].type) {
           case HSA_PRINTF_UNSIGNED_INT:
+            value = (int)queue->queue[i].data.ui;
+            break;
           case HSA_PRINTF_SIGNED_INT:
             value = queue->queue[i].data.i;
             break;
-
           case HSA_PRINTF_FLOAT:
             value = (int)queue->queue[i].data.f;
             break;
@@ -195,18 +223,15 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
             break;
         };
         printf(specifier.c_str(), value);
-
-
-      } else if (specifier == std::string("%f")) {
-
-
+      } else if (std::regex_search(specifier, specifierTypeMatch, floatPattern))  {
         float value = 0.0f;
         switch(queue->queue[i].type) {
           case HSA_PRINTF_UNSIGNED_INT:
+            value = (float)queue->queue[i].data.ui;
+            break;
           case HSA_PRINTF_SIGNED_INT:
             value = (float)queue->queue[i].data.i;
             break;
-
           case HSA_PRINTF_FLOAT:
             value = queue->queue[i].data.f;
             break;
@@ -214,7 +239,6 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
             break;
         };
         printf(specifier.c_str(), value);
-        
       }
       else {
         assert(false);
@@ -223,6 +247,15 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
     }
     printf("%s", formatString.c_str());
   }
+
+
+#ifdef HSA_PRINTF_DEBUG
+  if (queue->overflow) {
+    printf("Overflow detected!\n");
+  }
+#endif
+
+  queue->overflow = 0;
   queue->cursor = 0;
   queue->lock.store(unlocked,std::memory_order_release);
 }
