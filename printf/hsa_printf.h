@@ -1,4 +1,3 @@
-
 #include <cstdlib>
 #include <cstdio>
 #include <cassert>
@@ -16,10 +15,7 @@
 #define HSA_PRINTF_IMPL(count, ...) HSA_PRINTF_IMPL2(count, __VA_ARGS__) 
 #define HSA_PRINTF(...) HSA_PRINTF_IMPL(VA_NARGS(__VA_ARGS__), __VA_ARGS__)
 
-
 union HSAPrintfPacketData {
-  unsigned char uc;
-  char c;
   unsigned int ui;
   int i;
   float f;
@@ -28,20 +24,15 @@ union HSAPrintfPacketData {
 };
 
 enum HSAPrintfPacketDataType {
-   HSA_PRINTF_UNSIGNED_CHAR
-  ,HSA_PRINTF_SIGNED_CHAR
-  ,HSA_PRINTF_UNSIGNED_INT
+  HSA_PRINTF_UNSIGNED_INT
   ,HSA_PRINTF_SIGNED_INT
   ,HSA_PRINTF_FLOAT
   ,HSA_PRINTF_VOID_PTR
   ,HSA_PRINTF_CONST_VOID_PTR
 };
 
-
 class HSAPrintfPacket {
 public:
-  void set(unsigned char d)  { type = HSA_PRINTF_UNSIGNED_CHAR;   data.uc = d; }
-  void set(char d)           { type = HSA_PRINTF_SIGNED_INT;     data.c = d; }
   void set(unsigned int d)  { type = HSA_PRINTF_UNSIGNED_INT;   data.ui = d; }
   void set(int d)           { type = HSA_PRINTF_SIGNED_INT;     data.i = d; }
   void set(float d)         { type = HSA_PRINTF_FLOAT;          data.f = d; }
@@ -69,7 +60,6 @@ public:
   std::atomic_int lock;
 };
 
-
 static inline HSAPrintfPacketQueue* createHSAPrintfPacketQueue(unsigned int num) {
   HSAPrintfPacket* buffer = new HSAPrintfPacket[num];
   HSAPrintfPacketQueue* queue = new HSAPrintfPacketQueue(buffer, num);
@@ -82,7 +72,6 @@ static inline HSAPrintfPacketQueue* destroyHSAPrintfPacketQueue(HSAPrintfPacketQ
   return NULL;
 }
 
- 
 // get the argument count
 static inline void countArg(unsigned int& count) {}
 template <typename T> 
@@ -131,6 +120,13 @@ static inline HSAPrintfError hsa_printf(HSAPrintfPacketQueue* queue, const char*
   return error;
 }
 
+// regex for finding format string specifiers
+static std::regex specifierPattern("(%){1}[-+#0]*[0-9]*((.)[0-9]+){0,1}([diuoxXfFeEgGaAcsp]){1}");
+static std::regex signedIntegerPattern("(%){1}[-+#0]*[0-9]*((.)[0-9]+){0,1}([cdi]){1}");
+static std::regex unsignedIntegerPattern("(%){1}[-+#0]*[0-9]*((.)[0-9]+){0,1}([uoxX]){1}");
+static std::regex floatPattern("(%){1}[-+#0]*[0-9]*((.)[0-9]+){0,1}([fFeEgGaA]){1}");
+static std::regex pointerPattern("(%){1}[ps]");
+static std::regex doubleAmpersandPattern("(%){2}");
 
 static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
   int unlocked = 0;
@@ -138,20 +134,9 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
   while(!queue->lock.compare_exchange_weak(unlocked, locked
                                    , std::memory_order_acq_rel
                                    , std::memory_order_relaxed)) ; 
-
-  // regex for finding format string specifiers
-  std::regex specifierPattern("\%[diuoxXfFeEgGaAcspn]");
-
-  std::regex signedIntegerPattern("\%[di]");
-  std::regex unsignedIntegerPattern("\%[uoxX]");
-  std::regex floatPattern("\%[fFeEgGaA]");
-  std::regex charPattern("\%c");
-  std::regex stringPattern("\%s");
-  std::regex pointerPattern("\%p");
-
+    
   unsigned int numPackets = 0;
   for (unsigned int i = 0; i < queue->cursor; ) {
-
     numPackets = queue->queue[i++].data.ui;
     if (numPackets == 0)
       continue;
@@ -162,14 +147,12 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
            || queue->queue[formatStringIndex].type == HSA_PRINTF_CONST_VOID_PTR);
     std::string formatString((const char*)queue->queue[formatStringIndex].data.cptr);
 
-
     unsigned int formatStringCursor = 0;
     std::smatch specifierMatches;
 
 #ifdef HSA_PRINTF_DEBUG
     //printf("%s:%d \t number of matches = %d\n", __FUNCTION__, __LINE__, (int)specifierMatches.size());
 #endif
-
     
     for (unsigned int j = 1; j < numPackets; j++,i++) {
 
@@ -185,76 +168,38 @@ static inline void hsa_process_printf_queue(HSAPrintfPacketQueue* queue) {
       std::cout << " (specifier found: " << specifier << ") ";
 #endif
 
-      // print the string before the specifier
-      printf("%s", std::string(specifierMatches.prefix()).c_str());
-
+      // print the substring before the specifier
+      // clean up all the double ampersands
+      std::string prefix = specifierMatches.prefix();
+      prefix = std::regex_replace(prefix,doubleAmpersandPattern,"%");
+      printf("%s",prefix.c_str());
       
       std::smatch specifierTypeMatch;
       if (std::regex_search(specifier, specifierTypeMatch, unsignedIntegerPattern)) {
-        unsigned int value = 0;
-        switch(queue->queue[i].type) {
-          case HSA_PRINTF_UNSIGNED_INT:
-            value = queue->queue[i].data.ui;
-            break;
-          case HSA_PRINTF_SIGNED_INT:
-            value = (unsigned int) queue->queue[i].data.i;
-            break;
-          case HSA_PRINTF_FLOAT:
-            value = (unsigned int)queue->queue[i].data.f;
-            break;
-          default:
-            break;
-        };
-        printf(specifier.c_str(), value);
-
+        printf(specifier.c_str(), queue->queue[i].data.ui);
       } else if (std::regex_search(specifier, specifierTypeMatch, signedIntegerPattern)) {
-        int value = 0;
-        switch(queue->queue[i].type) {
-          case HSA_PRINTF_UNSIGNED_INT:
-            value = (int)queue->queue[i].data.ui;
-            break;
-          case HSA_PRINTF_SIGNED_INT:
-            value = queue->queue[i].data.i;
-            break;
-          case HSA_PRINTF_FLOAT:
-            value = (int)queue->queue[i].data.f;
-            break;
-          default:
-            break;
-        };
-        printf(specifier.c_str(), value);
-      } else if (std::regex_search(specifier, specifierTypeMatch, floatPattern))  {
-        float value = 0.0f;
-        switch(queue->queue[i].type) {
-          case HSA_PRINTF_UNSIGNED_INT:
-            value = (float)queue->queue[i].data.ui;
-            break;
-          case HSA_PRINTF_SIGNED_INT:
-            value = (float)queue->queue[i].data.i;
-            break;
-          case HSA_PRINTF_FLOAT:
-            value = queue->queue[i].data.f;
-            break;
-          default:
-            break;
-        };
-        printf(specifier.c_str(), value);
+        printf(specifier.c_str(), queue->queue[i].data.i);
+      } else if (std::regex_search(specifier, specifierTypeMatch, floatPattern)) {
+        printf(specifier.c_str(), queue->queue[i].data.f);
+      } else if (std::regex_search(specifier, specifierTypeMatch, pointerPattern)) {
+        printf(specifier.c_str(), queue->queue[i].data.cptr);
       }
       else {
         assert(false);
       }
       formatString = specifierMatches.suffix();
     }
-    printf("%s", formatString.c_str());
+    // print the substring after the last specifier
+    // clean up all the double ampersands before printing
+    formatString = std::regex_replace(formatString,doubleAmpersandPattern,"%");
+    printf("%s",formatString.c_str());
   }
-
 
 #ifdef HSA_PRINTF_DEBUG
   if (queue->overflow) {
     printf("Overflow detected!\n");
   }
 #endif
-
   queue->overflow = 0;
   queue->cursor = 0;
   queue->lock.store(unlocked,std::memory_order_release);
