@@ -9,6 +9,8 @@ SOURCE=$1
 shift
 
 
-COMMAND="clang++ `clamp-config --build --cxxflags` -Xclang -fhsa-ext -c $SOURCE -o $SOURCE.o $@"
+
+
+COMMAND="clang++ `clamp-config --cxxflags` -Xclang -fhsa-ext -c $SOURCE -o $SOURCE.o $@"
 echo $COMMAND
 $COMMAND

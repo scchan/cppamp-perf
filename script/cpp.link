@@ -6,6 +6,6 @@ CPPAMP_PATH="$CPPAMP_BUILD/compiler/bin:$CPPAMP_BUILD/lib:$CPPAMP_BUILD/build/Re
 export PATH=$PATH:$CPPAMP_PATH
 
 
-COMMAND="clang++ `clamp-config --build --ldflags` -Xclang -fhsa-ext $@"
+COMMAND="clang++ `clamp-config --ldflags` -Xclang -fhsa-ext $@"
 echo $COMMAND
 $COMMAND
