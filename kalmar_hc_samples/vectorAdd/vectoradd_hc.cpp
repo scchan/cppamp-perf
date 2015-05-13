@@ -8,6 +8,8 @@
 
 #define NUM       (WIDTH*HEIGHT)
 
+#define THREADS_PER_BLOCK_X  16
+#define THREADS_PER_BLOCK_Y  16
 
 __KERNEL void vectoradd_float(float* a, const float* b, const float* c, int width, int height) {
   
@@ -34,12 +36,13 @@ int main() {
   hcError deviceError;
 
   int i;
+  int errors;
 
   hostB = (float*)malloc(NUM * sizeof(float));
   hostC = (float*)malloc(NUM * sizeof(float));
   
   // initialize the input data
-  for(i = 0; i < NUM; i++) {
+  for (i = 0; i < NUM; i++) {
     hostB = (float)i;
     hostC = (float)i*100.0f;
   }
@@ -49,15 +52,37 @@ int main() {
   HC_ASSERT(hcMalloc((void**)&deviceC, NUM * sizeof(float)));
   
   HC_ASSERT(hcMemcpy(deviceB, hostB, NUM*sizeof(float), hcMemcpyHostToAccelerator);
-  HC_ASSERT(hcMemcpy(deviceC, hostC, NUM*sizeof(float), hcMemcpyHostToAccelerator);
+  HC_ASSERT(hcMemcpy(deviceC, hostC, NUM*sizeof(float), #dhcMemcpyHostToAccelerator);
 
   hcLaunchKernel(vectoradd_float
-                ,hcLaunchParam(
-                   DIM3(), DIM3()
+                ,hcCreateLaunchParam2(
+                     DIM3(WIDTH/THREADS_PER_BLOCK_X, HEIGHT/THREADS_PER_BLOCK_Y)
+                   , DIM3(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y)
                  )
                 ,deviceA ,deviceB ,deviceC ,WIDTH ,HEIGHT);
 
   HC_ASSERT(hcMemcpy(hostA, deviceA, NUM*sizeof(float), hcMemcpyAcceleratorToHost));
 
-  return 0;
+  // verify the results
+  errors = 0;
+  for (i = 0; i < NUM; i++) {
+    if (hostA[i] != (hostB[i] + hostC[i])) {
+      errors++;
+    }
+  }
+  if (errors!=0) {
+    printf("%d errors\n",errors);
+  }
+
+  HC_ASSERT(hcFree(deviceA));
+  HC_ASSERT(hcFree(deviceB));
+  HC_ASSERT(hcFree(deviceC));
+
+  free(hostA);
+  free(hostB);
+  free(hostC);
+
+  hcResetDefaultAccelerator();
+
+  return errors;
 }
