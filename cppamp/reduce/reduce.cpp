@@ -69,7 +69,7 @@ int main(void) {
   for (int i = 0; i < NUM; i++) {
     reduce+=a[i];
   }
-  printf("gpu reduction: %d\n",reduce);
+  printf("cpu reduction: %d\n",reduce);
 
 
   return 0;
