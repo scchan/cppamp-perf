@@ -1,0 +1,14 @@
+module &__llvm_hsail_module:1:0:$full:$large:$near;
+
+prog kernel &copy(
+    kernarg_u64 %input,
+    kernarg_u64 %output)
+{
+
+// BB#0:
+    ld_kernarg_align(8)_width(all)_u64  $d0, ["%input"];
+    ld_global_align(4)_f32  $s0, [$d0];
+    ld_kernarg_align(8)_width(all)_u64  $d0, ["%output"];
+    st_global_align(4)_f32  $s0, [$d0];
+    ret;
+};

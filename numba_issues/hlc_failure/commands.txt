@@ -1,0 +1,26 @@
+opt -verify -S -o 1-verified-llvm-ir 0-dump-llvm-ir
+llvm-link -S -o 2-link-dep 1-verified-llvm-ir
+llvm-link -S -o 3-linked-path 2-link-dep builtins-hsail.opt.bc
+opt -O3 -verify -S -o 4-optimized-llvm-ir 3-linked-path
+llc -O2 -march=hsail64 -filetype=asm -o 5-finalized-hsail 4-optimized-llvm-ir
+llc -O2 -march=hsail64 -filetype=obj -o 6-finalized-brig 4-optimized-llvm-ir
+
+EmitRawText called on an MCStreamer that doesn't support it,  something must not be fully mc'ized
+#0 0x1c3da0f llvm::sys::PrintStackTrace(_IO_FILE*) (/opt/amd/bin/llc+0x1c3da0f)
+#1 0x1c3dcaa PrintStackTraceSignalHandler(void*) (/opt/amd/bin/llc+0x1c3dcaa)
+#2 0x1c3c703 SignalHandler(int) (/opt/amd/bin/llc+0x1c3c703)
+#3 0x7fb15a7e8340 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x10340)
+#4 0x7fb159c1ecc9 gsignal (/lib/x86_64-linux-gnu/libc.so.6+0x36cc9)
+#5 0x7fb159c220d8 abort (/lib/x86_64-linux-gnu/libc.so.6+0x3a0d8)
+#6 0x1941f0c llvm::MCStreamer::EmitRawText(llvm::Twine const&) (/opt/amd/bin/llc+0x1941f0c)
+#7 0x1941f77 llvm::MCStreamer::EmitRawText(llvm::Twine const&) (/opt/amd/bin/llc+0x1941f77)
+#8 0xf25dcc llvm::HSAILAsmPrinter::EmitStartOfAsmFile(llvm::Module&) (/opt/amd/bin/llc+0xf25dcc)
+#9 0x144d27e llvm::AsmPrinter::doInitialization(llvm::Module&) (/opt/amd/bin/llc+0x144d27e)
+#10 0x188bbf8 llvm::FPPassManager::doInitialization(llvm::Module&) (/opt/amd/bin/llc+0x188bbf8)
+#11 0x188bd7b (anonymous namespace)::MPPassManager::runOnModule(llvm::Module&) (/opt/amd/bin/llc+0x188bd7b)
+#12 0x188c59e llvm::legacy::PassManagerImpl::run(llvm::Module&) (/opt/amd/bin/llc+0x188c59e)
+#13 0x188c7ed llvm::legacy::PassManager::run(llvm::Module&) (/opt/amd/bin/llc+0x188c7ed)
+#14 0xb47f00 compileModule(char**, llvm::LLVMContext&) (/opt/amd/bin/llc+0xb47f00)
+#15 0xb470ae main (/opt/amd/bin/llc+0xb470ae)
+#16 0x7fb159c09ec5 __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x21ec5)
+#17 0xb44659 _start (/opt/amd/bin/llc+0xb44659)
