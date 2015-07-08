@@ -52,7 +52,7 @@ int main() {
   HC_ASSERT(hcMalloc((void**)&deviceC, NUM * sizeof(float)));
   
   HC_ASSERT(hcMemcpy(deviceB, hostB, NUM*sizeof(float), hcMemcpyHostToAccelerator);
-  HC_ASSERT(hcMemcpy(deviceC, hostC, NUM*sizeof(float), #dhcMemcpyHostToAccelerator);
+  HC_ASSERT(hcMemcpy(deviceC, hostC, NUM*sizeof(float), hcMemcpyHostToAccelerator);
 
   hcLaunchKernel(vectoradd_float
                 ,hcCreateLaunchParam2(
