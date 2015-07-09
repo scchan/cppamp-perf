@@ -38,7 +38,13 @@ void add(float* a, float* b, float* c, unsigned int num) {
       cc[idx] = aa[idx] + bb[idx];
     });
   }
+  completion_future aaf = aa.synchronize_async();
+  completion_future bbf = bb.synchronize_async();
+  completion_future ccf = cc.synchronize_async();
 
+  aaf.wait();
+  bbf.wait();
+  ccf.wait();
 }
 
 #else
