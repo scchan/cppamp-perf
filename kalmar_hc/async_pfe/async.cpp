@@ -96,7 +96,7 @@ void single_view_outoforder_independent_kernels(int* da, int* db, const unsigned
 void multiple_view_inorder_with_copy(int* da, int* db, int* dc, const unsigned int num) {
   accelerator acc = accelerator();
 
-  // out-of-order queue
+  // in-order queue
   accelerator_view av1 = acc.create_view(queuing_mode::queuing_mode_in_order);
  
   parallel_for_each(av1, extent<1>(num), [=](index<1> idx) {
@@ -146,4 +146,60 @@ void single_view_out_of_order_with_copy(int* da, int* db, int* dc, const unsigne
   av.wait(); 
 }
 
+
+
+
+void pitfall_race_condition(int* da, int* db, int* dc, const unsigned int num) {
+  accelerator acc = accelerator();
+
+ 
+  int i = 0;
+  
+  // in-order queue
+  accelerator_view av1 = acc.create_view(queuing_mode::queuing_mode_in_order);
+ 
+  parallel_for_each(av1, extent<1>(num), [&](index<1> idx) {
+    // i is passed by reference, modifying the value of i
+    if (idx[0] == (num-1))
+      i = 100;
+  });
+
+  // This shows a race condition.  When this kernel is enqueued, the value of i
+  // is copied by the runtime.  Without proper synchronization with the previous
+  // kernel, the value of 'i' is undefined.
+  parallel_for_each(av1, extent<1>(num), [=](index<1> idx) {
+    // race condition, the value of i is undefined!
+    da[idx[0]] = i; 
+  });
+
+}
+
+
+
+void pitfall_race_condition_2(int* da, int* db, int* dc, const unsigned int num) {
+  accelerator acc = accelerator();
+
+ 
+  int i = 0;
+  
+  // in-order queue
+  accelerator_view av = acc.create_view(queuing_mode::queuing_mode_in_order);
+ 
+  parallel_for_each(av, extent<1>(num), [&](index<1> idx) {
+    // i is passed by reference, modifying the value of i
+    if (idx[0] == (num-1))
+      i = 100;
+  });
+
+
+  // Even though there is barrier to wait for the previous kernel to complete, 
+  // there's still a race condition because the value of i
+  // is copied by the runtime when the barrier is enqueued and not after the
+  // wait barrier is complete and therefore, the value of 'i' is undefined.
+  barrier(av, cfs, parallel_for_each(av, extent<1>(num), [=](index<1> idx) {
+    // race condition, the value of i is undefined!
+    da[idx[0]] = i; 
+  });
+
+}
 
