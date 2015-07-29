@@ -1,0 +1,57 @@
+module &__llvm_hsail_module:1:0:$full:$large:$near;
+
+prog kernel &hsaPy_hsapy_devfn__5F__5F_main_5F__5F__2E_foo_24_1_2E_array_28_int64_2C__20_1d_2C__20_C_29_(
+	kernarg_u64 %_dot_.1,
+	kernarg_u64 %_dot_.2,
+	kernarg_u64 %_dot_.3,
+	kernarg_u64 %_dot_.4,
+	kernarg_u64 %_dot_.5,
+	kernarg_u64 %_dot_.6,
+	kernarg_u64 %_dot_.7)
+{
+	pragma "AMD RTI", "ARGSTART:hsaPy_hsapy_devfn__5F__5F_main_5F__5F__2E_foo_24_1_2E_array_28_int64_2C__20_1d_2C__20_C_29_";
+	pragma "AMD RTI", "version:3:1:104";
+	pragma "AMD RTI", "device:generic";
+	pragma "AMD RTI", "uniqueid:1024";
+	pragma "AMD RTI", "function:1:0";
+	pragma "AMD RTI", "memory:64bitABI";
+	pragma "AMD RTI", "privateid:1";
+	pragma "AMD RTI", "ARGEND:hsaPy_hsapy_devfn__5F__5F_main_5F__5F__2E_foo_24_1_2E_array_28_int64_2C__20_1d_2C__20_C_29_";
+	group_u64 %_hsapy_smem[2];
+	// BB#0:                                // %.9
+	workitemid_u32	$s0, 0;
+	shl_u32	$s2, $s0, 3;
+	lda_group_u32	$s1, [%_hsapy_smem];
+	add_u32	$s2, $s1, $s2;
+	stof_group_u64_u32	$d2, $s2;
+	st_align(8)_u64	666, [$d2];
+	barrier;
+	cvt_u64_u32	$d0, $s0;
+	ld_kernarg_align(8)_width(all)_u64	$d1, [%_dot_.5];
+	cmp_eq_b1_s32	$c0, $s0, 0;
+	cbr_b1	$c0, @BB0_1;
+	// BB#2:                                // %B97.i
+	barrier;
+	mov_b64	$d3, 456;
+	cmp_ne_b1_s32	$c0, $s0, 1;
+	cbr_b1	$c0, @BB0_4;
+	// BB#3:                                // %B122.i
+	ld_align(8)_u64	$d3, [$d2];
+	br	@BB0_4;
+
+@BB0_1:
+	// %B97.thread.i
+	stof_group_u64_u32	$d2, $s1;
+	st_align(8)_u64	123, [$d2];
+	st_align(8)_u64	321, [$d2+8];
+	barrier;
+	mov_b64	$d3, 456;
+
+@BB0_4:
+	// %hsapy_devfn__5F__5F_main_5F__5F__2E_foo_24_1_2E_array_28_int64_2C__20_1d_2C__20_C_29_.exit
+	shl_u64	$d0, $d0, 3;
+	add_u64	$d0, $d1, $d0;
+	barrier;
+	st_align(8)_u64	$d3, [$d0];
+	ret;
+};
