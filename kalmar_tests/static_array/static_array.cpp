@@ -17,7 +17,7 @@ int main() {
     c[i] = 0;
   }
 
-  parallel_for_each(extent<1>(NUM), [=,&c](index<1> i) {
+  parallel_for_each(extent<1>(NUM), [=,&c](index<1> i) restrict(amp) {
     c[i[0]] = a[i[0]] + b[i[0]];
   });
 
