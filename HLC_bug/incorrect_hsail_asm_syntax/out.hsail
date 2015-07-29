@@ -1,0 +1,27 @@
+module &__llvm_hsail_module:1:0:$full:$large:$near;
+
+prog kernel &ZZ4mainEN3_EC__019__cxxamp_trampolineEPii(
+	kernarg_u64 %__arg_p0,
+	kernarg_u32 %__arg_p1)
+{
+	pragma "AMD RTI", "ARGSTART:ZZ4mainEN3_EC__019__cxxamp_trampolineEPii";
+	pragma "AMD RTI", "version:3:1:104";
+	pragma "AMD RTI", "device:generic";
+	pragma "AMD RTI", "uniqueid:1024";
+	pragma "AMD RTI", "function:1:0";
+	pragma "AMD RTI", "memory:64bitABI";
+	pragma "AMD RTI", "privateid:1";
+	pragma "AMD RTI", "ARGEND:ZZ4mainEN3_EC__019__cxxamp_trampolineEPii";
+	// BB#0:
+	workitemabsid_u32	$s0, 0;
+	cvt_s64_s32	$d0, $s0;
+	shl_u64	$d0, $d0, 2;
+	ld_kernarg_align(8)_width(all)_u64	$d1, [%__arg_p0];
+	add_u64	$d0, $d1, $d0;
+	ld_global_align(4)_u32	$s0, [$d0];
+	ld_kernarg_align(4)_width(all)_u32	$s1, [%__arg_p1];
+	add_u32	$s0, $s1, $s0;
+	add_u32	$s0, $s0, 1;
+	st_global_align(4)_u32	$s0, [$d0];
+	ret;
+};
