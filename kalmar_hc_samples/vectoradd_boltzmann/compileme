@@ -1,4 +1,6 @@
 #!/bin/bash
 
-/opt/kalmar/bin/clang++ `/opt/kalmar/bin/clamp-config --cxxflags --ldflags` -hc  -I ~/code/github/HSAFoundation/HSA-Runtime-AMD/include/ ./vectoradd.cpp -o vectoradd  -std=c++amp -v -L /opt/kalmar/lib/lib -g
+/opt/kalmar/bin/clang++ `/opt/kalmar/bin/clamp-config --cxxflags --ldflags` -hc  \
+-I ~/code/github/HSAFoundation/HSA-Runtime-AMD/include/ ./vectoradd.cpp -o vectoradd  -std=c++amp -v -L /opt/kalmar/lib/lib -g \
+-L/home/scchan/code/boltzmann/20150909/gold -lhsa-runtime64 -lhsakmt
 
