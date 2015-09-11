@@ -44,47 +44,29 @@ int main() {
 
   HSA_ASSERT(hsa_memory_allocate(*mem_region, NUM*sizeof(int), (void**)&device_a));
   HSA_ASSERT(hsa_memory_assign_agent(device_a, *agent, HSA_ACCESS_PERMISSION_RW));
+
   HSA_ASSERT(hsa_memory_allocate(*mem_region, NUM*sizeof(int), (void**)&device_b));
   HSA_ASSERT(hsa_memory_assign_agent(device_b, *agent, HSA_ACCESS_PERMISSION_RW));
 
-  
+  // copy the input data 
   HSA_ASSERT(hsa_memory_copy(device_a, va.data(), NUM*sizeof(int)));
-
-  //HSA_ASSERT(hsa_memory_copy(device_b, device_a, NUM*sizeof(int)));
   
   hc::parallel_for_each(hc::extent<1>(NUM),[&](hc::index<1> idx) __attribute((hc)) {
       int i = idx[0];
-      device_b[i] = device_a[i];
+      //device_b[i] = device_a[i];
+      device_b[i] = i;
   }).wait();
+
+  // copy the output data back to the vector
   HSA_ASSERT(hsa_memory_copy(vb.data(), device_b, NUM*sizeof(int)));
-
-#if 0
-  HSA_ASSERT(hsa_memory_allocate(*mem_region, NUM*sizeof(int), (void**)&device_b));
-  HSA_ASSERT(hsa_memory_assign_agent(device_b, *agent, HSA_ACCESS_PERMISSION_RW));
-
-
-  HSA_ASSERT(hsa_memory_allocate(*mem_region, NUM*sizeof(int), (void**)&device_c));
-  HSA_ASSERT(hsa_memory_assign_agent(device_c, *agent, HSA_ACCESS_PERMISSION_RW));
-
-  HSA_ASSERT(hsa_memory_copy(device_a, va.data(), NUM*sizeof(int)));
-  HSA_ASSERT(hsa_memory_copy(device_b, vb.data(), NUM*sizeof(int)));
-
-  hc::parallel_for_each(hc::extent<1>(NUM),[&](hc::index<1> idx) __attribute((hc)) {
-      int i = idx[0];
-      device_c[i] = device_a[i] + device_b[i];
-  }).wait();
-
-  HSA_ASSERT(hsa_memory_copy(vc.data(), device_c, NUM*sizeof(int)));
-  
-  HSA_ASSERT(hsa_memory_free(device_a));
-  HSA_ASSERT(hsa_memory_free(device_b));
-  HSA_ASSERT(hsa_memory_free(device_c));
-
-#endif
 
   int errors = 0;
   auto ia = va.begin();
-  errors = std::count_if(vb.begin(), vb.end(), [&] (int i) { return (i!=(*ia++)); });
+  //errors = std::count_if(vb.begin(), vb.end(), [&] (int i) { return (i!=(*ia++)); });
+
+  n = 0;
+  errors = std::count_if(vb.begin(), vb.end(), [&] (int i) { return (i!=(n++)); });
+
 
   std::cout << errors << " errors" << std::endl;  
 
