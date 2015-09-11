@@ -1,6 +1,16 @@
 #!/bin/bash
 
+
+HSA_RUNTIME_DIR=/home/scchan/code/boltzmann/20150910/gold 
+HSA_HEADER_DIR=/home/scchan/code/github/HSAFoundation/HSA-Runtime-AMD/include/ 
+
 /opt/kalmar/bin/clang++ `/opt/kalmar/bin/clamp-config --cxxflags --ldflags` -hc  \
--I ~/code/github/HSAFoundation/HSA-Runtime-AMD/include/ ./vectoradd.cpp -o vectoradd  -std=c++amp -v -L /opt/kalmar/lib/lib -g \
--L/home/scchan/code/boltzmann/20150909/gold -lhsa-runtime64 -lhsakmt
+-I $HSA_HEADER_DIR ./vectoradd.cpp -o vectoradd  -std=c++amp -v -g \
+-L$HSA_RUNTIME_DIR -lhsa-runtime64 -lhsakmt
+
+
+
+/opt/kalmar/bin/clang++ `/opt/kalmar/bin/clamp-config --cxxflags --ldflags` -hc  \
+-I $HSA_HEADER_DIR ./copytest.cpp -o copytest  -std=c++amp -v -g \
+-L$HSA_RUNTIME_DIR -lhsa-runtime64 -lhsakmt
 
