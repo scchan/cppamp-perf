@@ -54,7 +54,7 @@ int main() {
   HSA_ASSERT(hsa_memory_copy(device_a, va.data(), NUM*sizeof(int)));
   HSA_ASSERT(hsa_memory_copy(device_b, vb.data(), NUM*sizeof(int)));
 
-  hc::parallel_for_each(hc::extent<1>(NUM),[&](hc::index<1> idx) __attribute((hc)) {
+  hc::parallel_for_each(hc::extent<1>(NUM),[=](hc::index<1> idx) __attribute((hc)) {
       int i = idx[0];
       device_c[i] = device_a[i] + device_b[i];
   }).wait();
