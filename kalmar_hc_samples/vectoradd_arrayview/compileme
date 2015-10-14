@@ -1,0 +1,6 @@
+#!/bin/bash
+set -x
+
+HCC_PATH=/opt/hcc
+
+$HCC_PATH/bin/hcc `$HCC_PATH/bin/hcc-config --cxxflags --ldflags` vectoradd.cpp -o vectoradd 
